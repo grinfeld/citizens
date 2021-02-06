@@ -20,7 +20,8 @@ class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends Line
       case Nil => builder.build()
       case head :: remainder =>
         val headerValue = head._1
-        headers.get(head._2) match {
+        val header = head._2
+        headers.get(header) match {
           case None => parseColumns(remainder, builder)
           case Some(p) =>
             p match {
