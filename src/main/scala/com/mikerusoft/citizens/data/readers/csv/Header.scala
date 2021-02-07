@@ -1,7 +1,7 @@
 package com.mikerusoft.citizens.data.readers.csv
 
 import com.mikerusoft.citizens.data.readers.csv.Header.StringToOpt
-import com.mikerusoft.citizens.model.{Phone, PhoneType}
+import com.mikerusoft.citizens.model.{PersonalInfo, Phone, PhoneType}
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -51,7 +51,24 @@ sealed class Tz extends Header[String] {
       .filter(v => v.length <= 9).map(v => appendWithZeros(v))
   }
 }
-sealed class FullName extends StringHeader
+sealed class FullNameFirstNameFirst(val delimiter: String = "") extends Header[PersonalInfo.Builder] {
+  override def toValue(value: String): Option[PersonalInfo.Builder] = {
+    value.split(delimiter).toList match {
+      case Nil => None
+      case header :: Nil => Option(PersonalInfo.builder().firstName(header))
+      case header :: remainder => Option(PersonalInfo.builder().firstName(header).lastName(remainder.mkString(" ")))
+    }
+  }
+}
+sealed class FullNameLastNameFirst(val delimiter: String = "") extends Header[PersonalInfo.Builder] {
+  override def toValue(value: String): Option[PersonalInfo.Builder] = {
+    value.split(delimiter).toList match {
+      case Nil => None
+      case header :: Nil => Option(PersonalInfo.builder().lastName(header))
+      case header :: remainder => Option(PersonalInfo.builder().lastName(header).firstName(remainder.mkString(" ")))
+    }
+  }
+}
 sealed class FirstName extends StringHeader
 sealed class LastName extends StringHeader
 sealed class MiddleName extends StringHeader
@@ -76,8 +93,8 @@ sealed class BuildingNo extends StringHeader
 sealed class ApartmentNo extends StringHeader
 sealed class Entrance extends StringHeader
 sealed class NeighborhoodName extends StringHeader
-abstract class PhoneNumber(val countryToUse: String, val localPrefix: String, val phoneType: PhoneType) extends Header[Phone] {
-  override def toValue(value: String): Option[Phone] = {
+abstract class PhoneNumber(val countryToUse: String, val localPrefix: String, val phoneType: PhoneType) extends Header[Phone.Builder] {
+  override def toValue(value: String): Option[Phone.Builder] = {
     value.tryIt(_.replaceAll("[\\s\\-\\(\\)]", "").toLong.toString) match {
       case Some(phoneStringValue) =>
         val phoneNum = if (phoneStringValue.startsWith(countryToUse)) {
@@ -87,7 +104,7 @@ abstract class PhoneNumber(val countryToUse: String, val localPrefix: String, va
           } else {
             countryToUse + phoneStringValue
           }
-        Option(Phone(phoneNum, phoneType))
+        Option(Phone.builder().value(phoneNum).`type`(phoneType))
       case None => None
     }
   }

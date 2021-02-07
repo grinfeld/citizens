@@ -13,11 +13,13 @@ object Person {
 
     def withTz(tz: String): Builder = { this.tz = Option(tz); this }
     def withAddress(address: Address.Builder): Builder = { this.address = address; this }
+    def withAddress(updateFieldFunc: Address.Builder => Unit): Builder = { updateFieldFunc.apply(this.address); this }
     def withPhones(phones: List[Phone.Builder]): Builder = { this.phones = phones; this }
     def withEmails(emails: List[String]): Builder = { this.emails = emails; this }
     def withTags(tags: List[String]): Builder = { this.tags = tags; this }
     def withRemove(remove: Boolean): Builder = { this.remove = remove; this }
     def withPersonalInfo(personalInfo: PersonalInfo.Builder): Builder = { this.personalInfo = personalInfo; this }
+    def withPersonalInfo(personalInfoFieldFunc: PersonalInfo.Builder => Unit): Builder = { personalInfoFieldFunc.apply(this.personalInfo); this }
 
     def build(): Person = {
       Person(tz, phones.map(_.build()), emails.filterNot(_.isBlank), Option(address.build()), tags.filterNot(_.isBlank), remove, personalInfo.build())

@@ -20,34 +20,34 @@ class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends Line
       case Nil => builder.build()
       case head :: remainder =>
         val headerValue = head._1
-        val header = head._2
-        headers.get(header) match {
+        headers.get(head._2) match {
           case None => parseColumns(remainder, builder)
           case Some(p) =>
             p match {
-              case value: Tz => parseColumns(remainder, value.toValue(headerValue, builder.withTz)(builder))
-              case value: Email => parseColumns(remainder, value.toValue(headerValue, v => builder.withEmails(v :: builder.emails))(builder))
-              case _: FullName => parseColumns(remainder, builder) // todo: fix
-              case value: FirstName => parseColumns(remainder, value.toValue(headerValue, v => builder.withPersonalInfo(builder.personalInfo.firstName(v)))(builder))
-              case value: LastName => parseColumns(remainder, value.toValue(headerValue, v => builder.withPersonalInfo(builder.personalInfo.lastName(v)))(builder))
-              case value: MiddleName => parseColumns(remainder, value.toValue(headerValue, v => builder.withPersonalInfo(builder.personalInfo.middleName(v)))(builder))
-              case value: Age => parseColumns(remainder, value.toValue(headerValue, v => builder.withPersonalInfo(builder.personalInfo.bornYear(v)))(builder))
-              case value: BornYear => parseColumns(remainder, value.toValue(headerValue, v => builder.withPersonalInfo(builder.personalInfo.bornYear(v)))(builder))
-              case value: BirthDay => parseColumns(remainder, value.toValue(headerValue, v => builder.withPersonalInfo(builder.personalInfo.bornYear(v)))(builder))
-              case value: Remove => parseColumns(remainder, value.toValue(headerValue, builder.withRemove)(builder))
-              case value: Tags => parseColumns(remainder, value.toValue(headerValue, builder.withTags)(builder))
+              case header: Tz => parseColumns(remainder, header.toValue(headerValue, builder.withTz)(builder))
+              case header: Email => parseColumns(remainder, header.toValue(headerValue, v => builder.withEmails(v :: builder.emails))(builder))
+              case _: FullNameFirstNameFirst => parseColumns(remainder, builder) // todo: fix
+              case _: FullNameLastNameFirst => parseColumns(remainder, builder) // todo: fix
+              case header: FirstName => parseColumns(remainder, header.toValue(headerValue, v => builder.withPersonalInfo(_.firstName(v)))(builder))
+              case header: LastName => parseColumns(remainder, header.toValue(headerValue, v => builder.withPersonalInfo(_.lastName(v)))(builder))
+              case header: MiddleName => parseColumns(remainder, header.toValue(headerValue, v => builder.withPersonalInfo(_.middleName(v)))(builder))
+              case header: Age => parseColumns(remainder, header.toValue(headerValue, v => builder.withPersonalInfo(_.bornYear(v)))(builder))
+              case header: BornYear => parseColumns(remainder, header.toValue(headerValue, v => builder.withPersonalInfo(_.bornYear(v)))(builder))
+              case header: BirthDay => parseColumns(remainder, header.toValue(headerValue, v => builder.withPersonalInfo(_.bornYear(v)))(builder))
+              case header: Remove => parseColumns(remainder, header.toValue(headerValue, builder.withRemove)(builder))
+              case header: Tags => parseColumns(remainder, header.toValue(headerValue, builder.withTags)(builder))
               case _: FullAddress => parseColumns(remainder, builder) // todo: fix
-              case value: City => parseColumns(remainder, value.toValue(headerValue, v => builder.withAddress(builder.address.city(v)))(builder))
-              case value: Street => parseColumns(remainder, value.toValue(headerValue, v => builder.withAddress(builder.address.street(v)))(builder))
-              case value: BuildingNo => parseColumns(remainder, value.toValue(headerValue, v => builder.withAddress(builder.address.buildingNo(v)))(builder))
-              case value: ApartmentNo => parseColumns(remainder, value.toValue(headerValue, v => builder.withAddress(builder.address.apartment(v)))(builder))
-              case value: Entrance => parseColumns(remainder, value.toValue(headerValue, v => builder.withAddress(builder.address.entrance(v)))(builder))
-              case value: NeighborhoodName => parseColumns(remainder, value.toValue(headerValue, v => builder.withAddress(builder.address.neighborhood(v)))(builder))
-              case value: MobilePhone => parseColumns(remainder, value.toValue(headerValue, v => builder.withPhones(v.toBuilder() :: builder.phones))(builder))
-              case value: HomePhone => parseColumns(remainder, value.toValue(headerValue, v => builder.withPhones(v.toBuilder() :: builder.phones))(builder))
-              case value: WorkPhone => parseColumns(remainder, value.toValue(headerValue, v => builder.withPhones(v.toBuilder() :: builder.phones))(builder))
+              case header: City => parseColumns(remainder, header.toValue(headerValue, v => builder.withAddress(_.city(v)))(builder))
+              case header: Street => parseColumns(remainder, header.toValue(headerValue, v => builder.withAddress(_.street(v)))(builder))
+              case header: BuildingNo => parseColumns(remainder, header.toValue(headerValue, v => builder.withAddress(_.buildingNo(v)))(builder))
+              case header: ApartmentNo => parseColumns(remainder, header.toValue(headerValue, v => builder.withAddress(_.apartment(v)))(builder))
+              case header: Entrance => parseColumns(remainder, header.toValue(headerValue, v => builder.withAddress(_.entrance(v)))(builder))
+              case header: NeighborhoodName => parseColumns(remainder, header.toValue(headerValue, v => builder.withAddress(_.neighborhood(v)))(builder))
+              case header: MobilePhone => parseColumns(remainder, header.toValue(headerValue, v => builder.withPhones(v :: builder.phones))(builder))
+              case header: HomePhone => parseColumns(remainder, header.toValue(headerValue, v => builder.withPhones(v :: builder.phones))(builder))
+              case header: WorkPhone => parseColumns(remainder, header.toValue(headerValue, v => builder.withPhones(v :: builder.phones))(builder))
             }
-        }
+      }
     }
   }
 
