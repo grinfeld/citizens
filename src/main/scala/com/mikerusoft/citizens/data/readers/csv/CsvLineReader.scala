@@ -1,6 +1,6 @@
 package com.mikerusoft.citizens.data.readers.csv
 import com.mikerusoft.citizens.data.readers.csv.Types.HeaderItem
-import com.mikerusoft.citizens.model.Person
+import com.mikerusoft.citizens.model.{Person, PersonalInfo}
 
 import scala.annotation.tailrec
 
@@ -16,6 +16,11 @@ class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends Line
 
   @tailrec
   private def parseColumns (list: List[(String, Int)], builder: Person.Builder): Person = {
+
+    def fillPhoneBuilder(headerValue: String, header: PhoneNumber): Person.Builder = {
+      header.toValue(headerValue, v => builder.withPhones(v :: builder.phones))(builder)
+    }
+
     list match {
       case Nil => builder.build()
       case head :: remainder =>
@@ -43,9 +48,9 @@ class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends Line
               case header: ApartmentNo => parseColumns(remainder, header.toValue(headerValue, v => builder.withAddress(_.apartment(v)))(builder))
               case header: Entrance => parseColumns(remainder, header.toValue(headerValue, v => builder.withAddress(_.entrance(v)))(builder))
               case header: NeighborhoodName => parseColumns(remainder, header.toValue(headerValue, v => builder.withAddress(_.neighborhood(v)))(builder))
-              case header: MobilePhone => parseColumns(remainder, header.toValue(headerValue, v => builder.withPhones(v :: builder.phones))(builder))
-              case header: HomePhone => parseColumns(remainder, header.toValue(headerValue, v => builder.withPhones(v :: builder.phones))(builder))
-              case header: WorkPhone => parseColumns(remainder, header.toValue(headerValue, v => builder.withPhones(v :: builder.phones))(builder))
+              case header: MobilePhone => parseColumns(remainder, fillPhoneBuilder(headerValue, header))
+              case header: HomePhone => parseColumns(remainder, fillPhoneBuilder(headerValue, header))
+              case header: WorkPhone => parseColumns(remainder, fillPhoneBuilder(headerValue, header))
             }
       }
     }
