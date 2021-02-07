@@ -22,7 +22,7 @@ object Person {
     def withPersonalInfo(personalInfoFieldFunc: PersonalInfo.Builder => Unit): Builder = { personalInfoFieldFunc.apply(this.personalInfo); this }
 
     def build(): Person = {
-      Person(tz, phones.map(_.build()), emails.filterNot(_.isBlank), Option(address.build()), tags.filterNot(_.isBlank), remove, personalInfo.build())
+      Person(tz, phones.map(_.build()), emails.filterNot(_.isBlank), address.build(), tags.filterNot(_.isBlank), remove, personalInfo.build())
     }
   }
 }

@@ -1,10 +1,11 @@
 package com.mikerusoft.citizens.data.readers.csv
 import com.mikerusoft.citizens.data.readers.csv.Types.HeaderItem
 import com.mikerusoft.citizens.model.{Person, PersonalInfo}
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.annotation.tailrec
 
-class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends LineReader {
+class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends LineReader with LazyLogging {
 
   private def normalize(value: String): String = {
     val trimmed = value.trim
