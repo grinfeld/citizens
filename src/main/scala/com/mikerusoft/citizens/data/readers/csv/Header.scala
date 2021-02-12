@@ -51,7 +51,7 @@ sealed class Tz extends Header[String] {
       .filter(v => v.length <= 9).map(v => appendWithZeros(v))
   }
 }
-sealed class FullNameFirstNameFirst(val delimiter: String = "") extends Header[PersonalInfo.Builder] {
+sealed class FullNameFirstNameFirst(val delimiter: String = " ") extends Header[PersonalInfo.Builder] {
   override def toValue(value: String): Option[PersonalInfo.Builder] = {
     value.split(delimiter).toList match {
       case Nil => None
@@ -60,7 +60,7 @@ sealed class FullNameFirstNameFirst(val delimiter: String = "") extends Header[P
     }
   }
 }
-sealed class FullNameLastNameFirst(val delimiter: String = "") extends Header[PersonalInfo.Builder] {
+sealed class FullNameLastNameFirst(val delimiter: String = " ") extends Header[PersonalInfo.Builder] {
   override def toValue(value: String): Option[PersonalInfo.Builder] = {
     value.split(delimiter).toList match {
       case Nil => None
@@ -109,14 +109,14 @@ abstract class PhoneNumber(val countryToUse: String, val localPrefix: String, va
     }
   }
 }
-sealed class MobilePhone(override val countryToUse: String, override val localPrefix: String)
+sealed class MobilePhoneHeader(override val countryToUse: String, override val localPrefix: String)
                           extends PhoneNumber(countryToUse, localPrefix, phoneType = Phone.MOBILE_TYPE)
-sealed class WorkPhone(override val countryToUse: String, override val localPrefix: String)
+sealed class WorkPhoneHeader(override val countryToUse: String, override val localPrefix: String)
                           extends PhoneNumber(countryToUse, localPrefix, phoneType = Phone.WORK_TYPE)
-sealed class HomePhone(override val countryToUse: String, override val localPrefix: String)
+sealed class HomePhoneHeader(override val countryToUse: String, override val localPrefix: String)
                           extends PhoneNumber(countryToUse, localPrefix, phoneType = Phone.HOME_TYPE)
 sealed class Email extends StringHeader
-sealed class Tags(val delimiter: String) extends Header[List[String]] {
+sealed class Tags(val delimiter: String = ",") extends Header[List[String]] {
   override def toValue(value: String): Option[List[String]] = value.tryIt(_.split(delimiter).toList)
 }
 sealed class Remove extends Header[Boolean] {

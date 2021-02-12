@@ -10,7 +10,9 @@ object PersonalInfo {
     def this() = this(None, None, None, None)
 
     def firstName(firstName: String): Builder = { this.firstName = Option(firstName); this }
+    def firstName(firstName: Option[String]): Builder = { this.firstName = firstName; this }
     def lastName(lastName: String): Builder = { this.lastName = Option(lastName); this }
+    def lastName(lastName: Option[String]): Builder = { this.lastName = lastName; this }
     def middleName(middleName: String): Builder = { this.middleName = Option(middleName); this }
     def bornYear(bornYear: Int): Builder = { this.bornYear = Option(bornYear); this }
 

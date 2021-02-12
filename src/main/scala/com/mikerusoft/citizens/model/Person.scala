@@ -19,7 +19,7 @@ object Person {
     def withTags(tags: List[String]): Builder = { this.tags = tags; this }
     def withRemove(remove: Boolean): Builder = { this.remove = remove; this }
     def withPersonalInfo(personalInfo: PersonalInfo.Builder): Builder = { this.personalInfo = personalInfo; this }
-    def withPersonalInfo(personalInfoFieldFunc: PersonalInfo.Builder => Unit): Builder = { personalInfoFieldFunc.apply(this.personalInfo); this }
+    def withPersonalInfo(personalInfoFieldFunc: PersonalInfo.Builder => Any): Builder = { personalInfoFieldFunc.apply(this.personalInfo); this }
 
     def build(): Person = {
       Person(tz, phones.map(_.build()), emails.filterNot(_.isBlank), address.build(), tags.filterNot(_.isBlank), remove, personalInfo.build())
