@@ -1,5 +1,5 @@
 package com.mikerusoft.citizens.data.readers.csv
-import com.mikerusoft.citizens.data.readers.csv.HeaderConverter.HeaderOp
+import com.mikerusoft.citizens.data.readers.csv.HeaderConverter._
 import com.mikerusoft.citizens.data.readers.csv.Types.HeaderItem
 import com.mikerusoft.citizens.model.Person
 import com.typesafe.scalalogging.LazyLogging
@@ -26,6 +26,7 @@ class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends Line
         headers.get(head._2) match {
           case None => parseColumns(remainder, builder)
           case Some(p) =>
+            //parseColumns(remainder, p.toHeader(headerValue, builder))
             p match {
               case header: Tz => parseColumns(remainder, header.toHeader(headerValue, builder))
               case header: Email => parseColumns(remainder, header.toHeader(headerValue, builder))

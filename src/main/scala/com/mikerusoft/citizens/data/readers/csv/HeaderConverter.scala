@@ -21,11 +21,11 @@ object HeaderConverter {
   }
 
   implicit object TzConverter extends HeaderConverter[Tz] {
+
     @tailrec
     private def appendWithZeros(value: String): String = if (value.length >= 9) value else appendWithZeros("0" + value)
 
     override def convert(header: Tz, value: String, builder: Person.Builder): Person.Builder = {
-
       value.tryIt(_.toLong.toString).filter(v => v.length <= 9).map(appendWithZeros).toBuilder(builder.withTz)(builder)
     }
   }
@@ -163,7 +163,7 @@ object HeaderConverter {
   }
 
   implicit class HeaderOp[T](header: T) {
-    def toHeader[N](value: String, builder: Person.Builder)(implicit converter: HeaderConverter[T]): Person.Builder = converter.convert(header, value, builder)
+    def toHeader(value: String, builder: Person.Builder)(implicit converter: HeaderConverter[T]): Person.Builder = converter.convert(header, value, builder)
   }
 
   implicit class StringToOpt(value: String) {
