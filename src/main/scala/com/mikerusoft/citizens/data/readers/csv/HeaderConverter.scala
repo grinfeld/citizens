@@ -164,18 +164,18 @@ object HeaderConverter {
     def toHeader(value: String, builder: Person.Builder)(implicit converter: HeaderConverter[T]): Person.Builder = converter.convert(header, value, builder)
   }
 
-  implicit class StringOptWithTry(value: Option[String]) {
+  implicit class StringOptWithTry(option: Option[String]) {
     def tryIt[T](func: String => T):Option[T] = {
-      value.flatMap(vo => Try(func(vo)) match {
-        case Success(v) => Option(v)
+      option.flatMap(value => Try(func(value)) match {
+        case Success(result) => Option(result)
         case Failure(_) => None
       })
     }
   }
 
-  implicit class OptToBuilder[T](value: Option[T]) {
+  implicit class OptToBuilder[T](option: Option[T]) {
     def toBuilder(func: T => Person.Builder)(f: Person.Builder): Person.Builder = {
-      value match {
+      option match {
         case Some(v) => func.apply(v)
         case None => f
       }
