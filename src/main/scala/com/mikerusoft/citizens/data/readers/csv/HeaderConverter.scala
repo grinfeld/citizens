@@ -160,6 +160,11 @@ object HeaderConverter {
     override def convert(header: HomePhoneHeader, value: String, builder: Person.Builder): Person.Builder = parsePhone(value, header, builder)
   }
 
+
+  implicit object HeaderConverter extends HeaderConverter[Header] {
+    override def convert(header: Header, value: String, builder: Person.Builder): Person.Builder = ???
+  }
+
   implicit class HeaderOp[T <: Header](header: T) {
     def toHeader(value: String, builder: Person.Builder)(implicit converter: HeaderConverter[T]): Person.Builder = converter.convert(header, value, builder)
   }
