@@ -174,7 +174,7 @@ object HeaderConverter {
   }
 
   implicit class OptToBuilder[T](value: Option[T]) {
-    def toBuilder[F](func: T => F)(f: F): F = {
+    def toBuilder(func: T => Person.Builder)(f: Person.Builder): Person.Builder = {
       value match {
         case Some(v) => func.apply(v)
         case None => f
