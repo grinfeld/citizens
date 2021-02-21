@@ -8,6 +8,12 @@ import scala.annotation.tailrec
 
 class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends LineReader with LazyLogging {
 
+  override def readLine(line: String): Person = {
+    val data: List[(String, Int)] = line.split(delimiter).map(normalize).zipWithIndex
+      .filter(pair => headers.contains(pair._2)).toList
+    parseColumns(data, Person.builder())
+  }
+
   private def normalize(value: String): String = {
     val trimmed = value.trim
     if (trimmed.startsWith("'") && trimmed.endsWith("'"))
@@ -48,12 +54,6 @@ class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends Line
             case header: HomePhoneHeader => parseColumns(remainder, header.toHeader(headerValue, builder))
             case header: WorkPhoneHeader => parseColumns(remainder, header.toHeader(headerValue, builder))
           }
-    }
-  }
-
-  override def readLine(line: String): Person = {
-    val data: List[(String, Int)] = line.split(delimiter).map(value => normalize(value)).zipWithIndex
-      .filter(pair => headers.contains(pair._2)).toList
-    parseColumns(data, Person.builder())
+      }
   }
 }
