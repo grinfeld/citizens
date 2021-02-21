@@ -7,7 +7,7 @@ import java.time.temporal.{ChronoField, ChronoUnit}
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
-trait HeaderConverter[T] {
+trait HeaderConverter[T <: Header] {
   def convert(header: T, value: String, builder: Person.Builder): Person.Builder
 }
 
@@ -160,7 +160,7 @@ object HeaderConverter {
     override def convert(header: HomePhoneHeader, value: String, builder: Person.Builder): Person.Builder = parsePhone(value, header, builder)
   }
 
-  implicit class HeaderOp[T](header: T) {
+  implicit class HeaderOp[T <: Header](header: T) {
     def toHeader(value: String, builder: Person.Builder)(implicit converter: HeaderConverter[T]): Person.Builder = converter.convert(header, value, builder)
   }
 
