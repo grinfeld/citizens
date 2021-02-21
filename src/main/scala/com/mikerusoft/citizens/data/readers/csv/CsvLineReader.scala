@@ -9,6 +9,7 @@ import scala.annotation.tailrec
 class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends LineReader with LazyLogging {
 
   override def readLine(line: String): Person = {
+    // todo: split should be replaced by more sophisticated function, since we can have delimiter (for example ',') as part of some text: ('value', 'value1,value2,value3,..,valueN')
     val data: List[(String, Int)] = line.split(delimiter).map(normalize).zipWithIndex
       .filter(pair => headers.contains(pair._2)).toList
     parseColumns(data, Person.builder())
@@ -16,6 +17,7 @@ class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends Line
 
   private def normalize(value: String): String = {
     val trimmed = value.trim
+    // todo: to deal with different types of quotes: (',`,")
     if (trimmed.startsWith("'") && trimmed.endsWith("'"))
       trimmed.substring(1, trimmed.length - 1)
     else
@@ -30,6 +32,7 @@ class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends Line
       headers.get(head._2) match {
         case None => parseColumns(remainder, builder)
         case Some(p) =>
+          // todo: how to replace all this pattern matching with type-classes solution?
           //parseColumns(remainder, p.toHeader(headerValue, builder))
           p match {
             case header: Tz => parseColumns(remainder, header.toHeader(headerValue, builder))

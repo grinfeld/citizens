@@ -21,7 +21,6 @@ object HeaderConverter {
   }
 
   implicit object TzConverter extends HeaderConverter[Tz] {
-
     @tailrec
     private def appendWithZeros(value: String): String = if (value.length >= 9) value else appendWithZeros("0" + value)
 
