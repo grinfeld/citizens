@@ -44,7 +44,7 @@ class CsvLineReaderTest extends AnyFlatSpec with Matchers {
         (1, new MobilePhoneHeader("972", "0")),
         (2, new LastName)
       ).toMap, ",")
-    val person = reader.readLine("Misha,0544403945, Grinfeld")
+    val person = reader.readLine("Misha,(054)4403945, Grinfeld")
     assertResult(person.personalInfo.firstName)("Misha")
     assertResult(person.personalInfo.lastName)("Grinfeld")
     assertResult(person.tz)(None)

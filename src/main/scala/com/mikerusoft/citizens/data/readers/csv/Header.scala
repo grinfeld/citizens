@@ -23,13 +23,13 @@ sealed class BuildingNo extends Header
 sealed class ApartmentNo extends Header
 sealed class Entrance extends Header
 sealed class NeighborhoodName extends Header
-abstract class PhoneNumber(val countryToUse: String, val localPrefix: String, val phoneType: PhoneType) extends Header
+abstract class PhoneNumberHeader(val countryToUse: String, val localPrefix: String, val phoneType: PhoneType) extends Header
 sealed class MobilePhoneHeader(override val countryToUse: String, override val localPrefix: String)
-                          extends PhoneNumber(countryToUse, localPrefix, phoneType = Phone.MOBILE_TYPE)
+                          extends PhoneNumberHeader(countryToUse, localPrefix, phoneType = Phone.MOBILE_TYPE)
 sealed class WorkPhoneHeader(override val countryToUse: String, override val localPrefix: String)
-                          extends PhoneNumber(countryToUse, localPrefix, phoneType = Phone.WORK_TYPE)
+                          extends PhoneNumberHeader(countryToUse, localPrefix, phoneType = Phone.WORK_TYPE)
 sealed class HomePhoneHeader(override val countryToUse: String, override val localPrefix: String)
-                          extends PhoneNumber(countryToUse, localPrefix, phoneType = Phone.HOME_TYPE)
+                          extends PhoneNumberHeader(countryToUse, localPrefix, phoneType = Phone.HOME_TYPE)
 sealed class Email extends Header
 sealed class Tags(val delimiter: String = ",") extends Header
 sealed class Remove extends Header
