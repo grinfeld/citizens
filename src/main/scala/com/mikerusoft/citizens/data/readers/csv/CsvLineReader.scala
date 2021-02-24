@@ -1,6 +1,8 @@
 package com.mikerusoft.citizens.data.readers.csv
+
+import com.mikerusoft.citizens.data.readers.csv.CsvLineReader.PairToWord
 import com.mikerusoft.citizens.data.readers.csv.HeaderConverter._
-import com.mikerusoft.citizens.data.readers.csv.Types.HeaderItem
+import com.mikerusoft.citizens.data.readers.csv.Types.{HeaderItem, Word}
 import com.mikerusoft.citizens.model.Person
 import com.typesafe.scalalogging.LazyLogging
 
@@ -9,19 +11,46 @@ import scala.annotation.tailrec
 class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends LineReader with LazyLogging {
 
   override def readLine(line: String): Person = {
-    // todo: split should be replaced by more sophisticated function, since we can have delimiter (for example ',') as part of some text: ('value', 'value1,value2,value3,..,valueN')
-    val data: List[(String, Int)] = line.split(delimiter).map(normalize).zipWithIndex
-      .filter(pair => headers.contains(pair._2)).toList
+    val data: List[(String, Int)] = parseLine(line).zipWithIndex
+      .filter(pair => headers.contains(pair._2))
     parseColumns(data, Person.builder())
   }
 
-  private def normalize(value: String): String = {
-    val trimmed = value.trim
-    // todo: to deal with different types of quotes: (',`,")
-    if (trimmed.startsWith("'") && trimmed.endsWith("'"))
-      trimmed.substring(1, trimmed.length - 1)
-    else
-      trimmed
+  def parseLine(line: String): List[String] = {
+
+    @tailrec
+    def parsePart(current: Int, chars: Array[Char], acc: String, quoteStarted: Boolean): Word = {
+      if (current >= chars.length)
+        return (current, acc)
+      val ch = chars(current)
+      ch match {
+        case ',' => if (quoteStarted) parsePart(current+1, chars, acc+ch, quoteStarted) else (current+1, acc)
+        case '\'' =>
+          if (quoteStarted && current+1 >= chars.length)
+            (current+1, acc)
+          else if (quoteStarted && chars(current + 1) == ',')
+            (current+3, acc)
+          else
+            parsePart(current+1, chars, acc+ch, quoteStarted)
+        case _: Char => parsePart(current+1, chars, acc+ch, quoteStarted)
+      }
+    }
+
+    @tailrec
+    def parseChars(current: Int, chars: Array[Char], acc: List[String]): List[String] = {
+      val ch = chars(current)
+      val result = ch match {
+        case '\'' => parsePart(current+1, chars, "", quoteStarted = true)
+        case _: Char => parsePart(current+1, chars, s"$ch", quoteStarted = false)
+      }
+
+      if (result.index() >= chars.length)
+        result.word().trim() :: acc
+      else
+        parseChars(result.index(), chars, result.word().trim() :: acc)
+    }
+
+    parseChars(0, line.toCharArray, List()).reverse
   }
 
   @tailrec
@@ -58,5 +87,12 @@ class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends Line
             case header: WorkPhoneHeader => parseColumns(remainder, header.toHeader(headerValue, builder))
           }
       }
+  }
+}
+
+object CsvLineReader {
+  implicit class PairToWord(pair: Word) {
+    def index():Int = pair._1
+    def word(): String = pair._2
   }
 }
