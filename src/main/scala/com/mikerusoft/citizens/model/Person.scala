@@ -11,7 +11,7 @@ object Person {
 
     def this() = this(None, List(), List(), Address.builder(), List(), false, PersonalInfo.builder())
 
-    def withTz(tz: String): Builder = { this.tz = Option(tz); this }
+    def withTz(tz: String): Builder = { this.tz = Option(tz).filterNotEmpty(); this }
     def withAddress(address: Address.Builder): Builder = { this.address = address; this }
     def withAddress(updateFieldFunc: Address.Builder => Unit): Builder = { updateFieldFunc.apply(this.address); this }
     def withPhones(phones: List[Phone.Builder]): Builder = { this.phones = phones; this }
@@ -24,6 +24,10 @@ object Person {
     def build(): Person = {
       Person(tz, phones.map(_.build()), emails.filterNot(_.isBlank), address.build(), tags.filterNot(_.isBlank), remove, personalInfo.build())
     }
+  }
+
+  implicit class FilterBlankString(val value: Option[String]) {
+    def filterNotEmpty(): Option[String] = value.map(_.trim).filterNot(v => v.isBlank)
   }
 }
 

@@ -20,16 +20,14 @@ class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends Line
 
     @tailrec
     def parsePart(current: Int, chars: Array[Char], acc: String, quoteStarted: Boolean): Word = {
-      if (current >= chars.length)
+      if (isEndOfString(current, chars))
         return (current, acc)
       val ch = chars(current)
       ch match {
-        case ',' => if (quoteStarted) parsePart(current+1, chars, acc+ch, quoteStarted) else (current+1, acc)
-        case '\'' =>
-          if (quoteStarted && current+1 >= chars.length)
-            (current+1, acc)
-          else if (quoteStarted && chars(current + 1) == ',')
-            (current+3, acc)
+        case ',' => if (quoteStarted) parsePart(current+1, chars, acc+ch, quoteStarted) else (current, acc)
+        case ''' =>
+          if (quoteStarted) // means closing quotes, let's search for end of cell -> ','
+            parsePart(skipBlanks(current+1, chars), chars, acc, quoteStarted = false)
           else
             parsePart(current+1, chars, acc+ch, quoteStarted)
         case _: Char => parsePart(current+1, chars, acc+ch, quoteStarted)
@@ -38,10 +36,17 @@ class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends Line
 
     @tailrec
     def parseChars(current: Int, chars: Array[Char], acc: List[String]): List[String] = {
+      if (isEndOfString(current, chars))
+        return acc
       val ch = chars(current)
-      val result = ch match {
-        case '\'' => parsePart(current+1, chars, "", quoteStarted = true)
-        case _: Char => parsePart(current+1, chars, s"$ch", quoteStarted = false)
+      val nextNonBlank = if (ch == ',') skipBlanks(current+1, chars) else current
+      if (isEndOfString(nextNonBlank, chars))
+        return acc
+      val nextChar = chars(nextNonBlank)
+      val result = nextChar match {
+        case ',' => (nextNonBlank+1, "")
+        case ''' => parsePart(nextNonBlank+1, chars, "", quoteStarted = true)
+        case _: Char => parsePart(nextNonBlank, chars, "", quoteStarted = false)
       }
 
       if (result.index() >= chars.length)
@@ -49,6 +54,15 @@ class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends Line
       else
         parseChars(result.index(), chars, result.word().trim() :: acc)
     }
+
+    @tailrec
+    def skipBlanks(current: Int, chars: Array[Char]): Int = {
+      if (isEndOfString(current, chars))
+        return current;
+      if (chars(current).toString.isBlank) skipBlanks(current+1, chars) else current
+    }
+
+    def isEndOfString(i: Int, chars: Array[Char]): Boolean = if (i >= chars.length) true else false
 
     parseChars(0, line.toCharArray, List()).reverse
   }

@@ -1,5 +1,7 @@
 package com.mikerusoft.citizens.model
 
+import com.mikerusoft.citizens.model.Person.FilterBlankString
+
 case class Phone(value: String, `type`: PhoneType) {
   def toBuilder(): Phone.Builder = {
     new Phone.Builder(Option(value), Option(`type`))
@@ -16,7 +18,7 @@ object Phone {
   class Builder(var value: Option[String], var `type`: Option[PhoneType]) {
     def this() = this(None, None)
 
-    def value(value: String): Builder = { this.value = Option(value); this }
+    def value(value: String): Builder = { this.value = Option(value).filterNotEmpty(); this }
     def `type`(`type`: PhoneType): Builder = { this.`type` = Option(`type`); this }
 
     def build(): Phone = new Phone(value.get, `type`.get)
