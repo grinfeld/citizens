@@ -30,4 +30,3 @@ object Person {
     def filterNotEmpty(): Option[String] = value.map(_.trim).filterNot(v => v.isBlank)
   }
 }
-

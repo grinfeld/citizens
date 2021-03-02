@@ -1,6 +1,5 @@
 package com.mikerusoft.citizens.data.readers.csv
 
-import com.mikerusoft.citizens.data.readers.csv.CsvLineReader.PairToWord
 import com.mikerusoft.citizens.data.readers.csv.HeaderConverter._
 import com.mikerusoft.citizens.data.readers.csv.Types.{HeaderItem, Word}
 import com.mikerusoft.citizens.model.Person
@@ -17,54 +16,7 @@ class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends Line
   }
 
   def parseLine(line: String): List[String] = {
-
-    @tailrec
-    def parsePart(current: Int, chars: Array[Char], acc: String, quoteStarted: Boolean): Word = {
-      if (isEndOfString(current, chars))
-        return (current, acc)
-      val ch = chars(current)
-      ch match {
-        case ',' => if (quoteStarted) parsePart(current+1, chars, acc+ch, quoteStarted) else (current, acc)
-        case ''' =>
-          if (quoteStarted) // means closing quotes, let's search for end of cell -> ','
-            parsePart(skipBlanks(current+1, chars), chars, acc, quoteStarted = false)
-          else
-            parsePart(current+1, chars, acc+ch, quoteStarted)
-        case _: Char => parsePart(current+1, chars, acc+ch, quoteStarted)
-      }
-    }
-
-    @tailrec
-    def parseChars(current: Int, chars: Array[Char], acc: List[String]): List[String] = {
-      if (isEndOfString(current, chars))
-        return acc
-      val ch = chars(current)
-      val nextNonBlank = if (ch == ',') skipBlanks(current+1, chars) else current
-      if (isEndOfString(nextNonBlank, chars))
-        return acc
-      val nextChar = chars(nextNonBlank)
-      val result = nextChar match {
-        case ',' => (nextNonBlank+1, "")
-        case ''' => parsePart(nextNonBlank+1, chars, "", quoteStarted = true)
-        case _: Char => parsePart(nextNonBlank, chars, "", quoteStarted = false)
-      }
-
-      if (result.index() >= chars.length)
-        result.word().trim() :: acc
-      else
-        parseChars(result.index(), chars, result.word().trim() :: acc)
-    }
-
-    @tailrec
-    def skipBlanks(current: Int, chars: Array[Char]): Int = {
-      if (isEndOfString(current, chars))
-        return current;
-      if (chars(current).toString.isBlank) skipBlanks(current+1, chars) else current
-    }
-
-    def isEndOfString(i: Int, chars: Array[Char]): Boolean = if (i >= chars.length) true else false
-
-    parseChars(0, line.toCharArray, List()).reverse
+    CsvLineReader.parseChars(0, line.toCharArray, List()).reverse
   }
 
   @tailrec
@@ -105,8 +57,55 @@ class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends Line
 }
 
 object CsvLineReader {
-  implicit class PairToWord(pair: Word) {
+
+  private implicit class PairToWord(pair: Word) {
     def index():Int = pair._1
     def word(): String = pair._2
   }
+
+  @tailrec
+  private def parsePart(current: Int, chars: Array[Char], acc: String, quoteStarted: Boolean): Word = {
+    if (isEndOfString(current, chars))
+      return (current, acc)
+    val ch = chars(current)
+    ch match {
+      case ',' => if (quoteStarted) parsePart(current+1, chars, acc+ch, quoteStarted) else (current, acc)
+      case ''' =>
+        if (quoteStarted) // means closing quotes, let's search for end of cell -> ','
+          parsePart(skipBlanks(current+1, chars), chars, acc, quoteStarted = false)
+        else
+          parsePart(current+1, chars, acc+ch, quoteStarted)
+      case _: Char => parsePart(current+1, chars, acc+ch, quoteStarted)
+    }
+  }
+
+  @tailrec
+  private def parseChars(current: Int, chars: Array[Char], acc: List[String]): List[String] = {
+    if (isEndOfString(current, chars))
+      return acc
+    val ch = chars(current)
+    val nextNonBlank = if (ch == ',') skipBlanks(current+1, chars) else current
+    if (isEndOfString(nextNonBlank, chars))
+      return acc
+    val nextChar = chars(nextNonBlank)
+    val result = nextChar match {
+      case ',' => (nextNonBlank+1, "")
+      case ''' => parsePart(nextNonBlank+1, chars, "", quoteStarted = true)
+      case _: Char => parsePart(nextNonBlank, chars, "", quoteStarted = false)
+    }
+
+    if (result.index() >= chars.length)
+      result.word().trim() :: acc
+    else
+      parseChars(result.index(), chars, result.word().trim() :: acc)
+  }
+
+  @tailrec
+  private def skipBlanks(current: Int, chars: Array[Char]): Int = {
+    if (isEndOfString(current, chars))
+      return current;
+    if (chars(current).toString.isBlank) skipBlanks(current+1, chars) else current
+  }
+
+  def isEndOfString(i: Int, chars: Array[Char]): Boolean = if (i >= chars.length) true else false
 }
