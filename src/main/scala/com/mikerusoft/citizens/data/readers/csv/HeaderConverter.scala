@@ -144,7 +144,7 @@ object HeaderConverter {
           header.countryToUse + phoneStringValue
         }
         Option(Phone.builder().value(phoneNum).`type`(header.phoneType))
-      case None => None
+      case None => Option(Phone.builder().`type`(header.phoneType))
     }).toBuilder(v => builder.withPhones(v :: builder.phones))(builder)
   }
 

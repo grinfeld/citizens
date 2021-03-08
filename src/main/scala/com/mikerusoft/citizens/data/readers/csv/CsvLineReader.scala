@@ -1,5 +1,6 @@
 package com.mikerusoft.citizens.data.readers.csv
 
+import cats.data.Validated
 import com.mikerusoft.citizens.data.readers.csv.HeaderConverter._
 import com.mikerusoft.citizens.data.readers.csv.Types.{HeaderItem, Word}
 import com.mikerusoft.citizens.model.Person
@@ -9,7 +10,7 @@ import scala.annotation.tailrec
 
 class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends LineReader with LazyLogging {
 
-  override def readLine(line: String): Person = {
+  override def readLine(line: String): Validated[String, Person] = {
     val data: List[(String, Int)] = parseLine(line).zipWithIndex
       .filter(pair => headers.contains(pair._2))
     parseColumns(data, Person.builder())
@@ -20,8 +21,8 @@ class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends Line
   }
 
   @tailrec
-  private def parseColumns (list: List[(String, Int)], builder: Person.Builder): Person = list match {
-    case Nil => builder.build()
+  private def parseColumns (list: List[(String, Int)], builder: Person.Builder): Validated[String, Person] = list match {
+    case Nil => builder.buildWith()
     case head :: remainder =>
       val headerValue = head._1
       headers.get(head._2) match {

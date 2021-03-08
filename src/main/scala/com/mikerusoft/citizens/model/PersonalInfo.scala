@@ -25,7 +25,7 @@ object PersonalInfo {
     def build():PersonalInfo = new PersonalInfo(firstName.get, lastName.get, middleName, bornYear)
 
     def buildWith() : Validated[String, PersonalInfo] = {
-      (firstName.toValid("Empty Country"), lastName.toValid("Empty City"))
+      (firstName.toValid("Empty first name"), lastName.toValid("Empty last name"))
         .mapN((firstName, lastName) => new PersonalInfo(firstName, lastName, middleName, bornYear))
     }
   }
