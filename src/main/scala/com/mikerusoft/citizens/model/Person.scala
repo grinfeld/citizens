@@ -1,5 +1,10 @@
 package com.mikerusoft.citizens.model
 
+import cats.data.Validated
+import cats.data.Validated.Valid
+import cats.implicits.{catsSyntaxTuple2Semigroupal, catsSyntaxTuple3Semigroupal}
+import com.mikerusoft.citizens.model.context.Validation._
+
 case class Person(tz: Option[String], phones: List[Phone], emails: List[String], address: Option[Address], tags: List[String],
                   remove: Boolean = false, personalInfo: PersonalInfo)
 
@@ -23,6 +28,14 @@ object Person {
 
     def build(): Person = {
       Person(tz, phones.map(_.build()), emails.filterNot(_.isBlank), address.build(), tags.filterNot(_.isBlank), remove, personalInfo.build())
+    }
+    def buildWith() : Validated[String, Person] = {
+      val phonesValidated: Validated[String, List[Phone]] = phones.map(_.buildWith()).foldLeft(Valid(List[Phone]()).asInstanceOf[Validated[String, List[Phone]]])((acc, ph) => (acc, ph).mapN((ls, p) => p :: ls))
+      val personalInfoValidated = personalInfo.buildWith()
+      val addressValidated = address.buildWith()
+      (phonesValidated, personalInfoValidated, addressValidated).mapN((phones, personalInfo, address) =>
+        Person(tz, phones, emails.filterNot(_.isBlank), address, tags.filterNot(_.isBlank), remove, personalInfo)
+      )
     }
   }
 

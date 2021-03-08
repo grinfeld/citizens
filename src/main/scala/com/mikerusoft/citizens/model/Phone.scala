@@ -1,6 +1,10 @@
 package com.mikerusoft.citizens.model
 
+import cats.data.Validated
+import cats.implicits.catsSyntaxTuple2Semigroupal
 import com.mikerusoft.citizens.model.Person.FilterBlankString
+import cats.syntax.option._
+import com.mikerusoft.citizens.model.context.Validation._
 
 case class Phone(value: String, `type`: PhoneType) {
   def toBuilder(): Phone.Builder = {
@@ -9,6 +13,7 @@ case class Phone(value: String, `type`: PhoneType) {
 }
 
 object Phone {
+
   val HOME_TYPE = new HomePhoneType
   val MOBILE_TYPE = new MobilePhoneType
   val WORK_TYPE = new WorkPhoneType
@@ -22,12 +27,16 @@ object Phone {
     def `type`(`type`: PhoneType): Builder = { this.`type` = Option(`type`); this }
 
     def build(): Phone = new Phone(value.get, `type`.get)
+
+    def buildWith() : Validated[String, Phone] = {
+      (value.toValid("Invalid phone value"), `type`.toValid("Invalid phone type")).mapN((p, t) => new Phone(p, t))
+    }
   }
 }
 
 trait PhoneType {}
-sealed class HomePhoneType extends PhoneType
-sealed class MobilePhoneType extends PhoneType
-sealed class WorkPhoneType extends PhoneType
+sealed case class HomePhoneType() extends PhoneType
+sealed case class MobilePhoneType() extends PhoneType
+sealed case class WorkPhoneType() extends PhoneType
 
 
