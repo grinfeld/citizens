@@ -2,7 +2,7 @@ package com.mikerusoft.citizens.data.readers.csv
 
 import cats.data.Validated
 import com.mikerusoft.citizens.data.readers.csv.HeaderConverter._
-import com.mikerusoft.citizens.data.readers.csv.Types.{HeaderItem, Word}
+import com.mikerusoft.citizens.data.readers.csv.Types.{Columns, HeaderItem, Word}
 import com.mikerusoft.citizens.model.Person
 import com.typesafe.scalalogging.LazyLogging
 
@@ -11,13 +11,9 @@ import scala.annotation.tailrec
 class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends LineReader with LazyLogging {
 
   override def readLine(line: String): Validated[String, Person] = {
-    val data: List[(String, Int)] = parseLine(line).zipWithIndex
+    val data: List[(String, Int)] = CsvLineReader.parseCsvLine(line).zipWithIndex
       .filter(pair => headers.contains(pair._2))
     parseColumns(data, Person.builder())
-  }
-
-  def parseLine(line: String): List[String] = {
-    CsvLineReader.parseChars(0, line.toCharArray, List()).reverse
   }
 
   @tailrec
@@ -28,7 +24,7 @@ class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends Line
       headers.get(head._2) match {
         case None => parseColumns(remainder, builder)
         case Some(p) =>
-          // todo: how to replace all this pattern matching with type-classes solution?
+          // todo: how to replace all this pattern matching with type-classes solution? till now - no solution
           //parseColumns(remainder, p.toHeader(headerValue, builder))
           p match {
             case header: Tz => parseColumns(remainder, header.toHeader(headerValue, builder))
@@ -59,6 +55,10 @@ class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends Line
 
 object CsvLineReader {
 
+  def parseCsvLine(line: String) : Columns = {
+    parseChars(0, line.toCharArray, List()).reverse
+  }
+
   private implicit class PairToWord(pair: Word) {
     def index():Int = pair._1
     def word(): String = pair._2
@@ -81,7 +81,7 @@ object CsvLineReader {
   }
 
   @tailrec
-  private def parseChars(current: Int, chars: Array[Char], acc: List[String]): List[String] = {
+  private def parseChars(current: Int, chars: Array[Char], acc: Columns): Columns = {
     if (isEndOfString(current, chars))
       return acc
     val ch = chars(current)
@@ -104,9 +104,12 @@ object CsvLineReader {
   @tailrec
   private def skipBlanks(current: Int, chars: Array[Char]): Int = {
     if (isEndOfString(current, chars))
-      return current;
-    if (chars(current).toString.isBlank) skipBlanks(current+1, chars) else current
+      current
+    else if (chars(current).toString.isBlank)
+      skipBlanks(current+1, chars)
+    else
+      current
   }
 
-  def isEndOfString(i: Int, chars: Array[Char]): Boolean = if (i >= chars.length) true else false
+  private def isEndOfString(i: Int, chars: Array[Char]): Boolean = if (i >= chars.length) true else false
 }
