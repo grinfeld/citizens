@@ -1,4 +1,4 @@
-package com.mikerusoft.citizens.data.readers.csv
+package com.mikerusoft.citizens.data.parsers.csv
 
 import cats.data.Validated
 import cats.data.Validated.{Invalid, Valid}
@@ -6,7 +6,7 @@ import com.mikerusoft.citizens.model.{Person, Phone}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class CsvLineReaderTest extends AnyFlatSpec with Matchers {
+class CsvLineParserTest extends AnyFlatSpec with Matchers {
 
   private def assertValidValue(runFunc: () => Validated[String, Person]): Person = {
     runFunc() match {
@@ -25,27 +25,26 @@ class CsvLineReaderTest extends AnyFlatSpec with Matchers {
   }
 
   "when no headers" should "expected no required first name and last name error message" in {
-    val reader = new CsvLineReader(List().toMap, ",")
+    val reader = CsvLineParser(List().toMap)
     assertInvalidValue(() => reader.readLine("Misha,Grinfeld"), "Empty first name, Empty last name")
   }
 
   "when only first name" should "expected no required last name error message" in {
-    val reader = new CsvLineReader(List((0, new FirstName), (1, new LastName)).toMap, ",")
+    val reader = CsvLineParser(List((0, new FirstName), (1, new LastName)).toMap)
     assertInvalidValue(() => reader.readLine("Misha,,"), "Empty last name")
   }
 
   "when invalid mobile phone" should "expected invalid phone value error message" in {
-    val reader = new CsvLineReader(
-      List(
-        (0, new FirstName),
-        (1, new MobilePhoneHeader("972", "0")),
-        (2, new LastName)
-      ).toMap, ",")
+    val reader = CsvLineParser(List(
+            (0, new FirstName),
+            (1, new MobilePhoneHeader("972", "0")),
+            (2, new LastName)
+          ).toMap)
     assertInvalidValue(() => reader.readLine("   Misha,fgdfgdf, Grinfeld"), "Invalid phone value")
   }
 
   "without quotes when only firstName and lastName" should "expected Person with only first name and lastname and remove false, all others are None or empty" in {
-    val reader = new CsvLineReader(List((0, new FirstName), (1, new LastName)).toMap, ",")
+    val reader = CsvLineParser(List((0, new FirstName), (1, new LastName)).toMap)
     val person = assertValidValue(() => reader.readLine("Misha,Grinfeld"))
     assertResult("Misha")(person.personalInfo.firstName)
     assertResult("Grinfeld")(person.personalInfo.lastName)
@@ -58,7 +57,7 @@ class CsvLineReaderTest extends AnyFlatSpec with Matchers {
   }
 
   "with quotes when only firstName and lastName" should "expected Person with only first name and lastname and remove false, all others are None or empty" in {
-    val reader = new CsvLineReader(List((0, new FirstName), (1, new LastName)).toMap, ",")
+    val reader = CsvLineParser(List((0, new FirstName), (1, new LastName)).toMap)
     val person = assertValidValue(() => reader.readLine("'Misha', 'Grinfeld'"))
     assertResult("Misha")(person.personalInfo.firstName)
     assertResult("Grinfeld")(person.personalInfo.lastName)
@@ -71,7 +70,7 @@ class CsvLineReaderTest extends AnyFlatSpec with Matchers {
   }
 
   "without quotes and quote in the middle of name when only firstName and lastName" should "expected Person with only first name and lastname and remove false, all others are None or empty" in {
-    val reader = new CsvLineReader(List((0, new FirstName), (1, new LastName)).toMap, ",")
+    val reader = CsvLineParser(List((0, new FirstName), (1, new LastName)).toMap)
     val person = assertValidValue(() => reader.readLine("Mi'sha, Grinfeld"))
     assertResult("Mi'sha")(person.personalInfo.firstName)
     assertResult("Grinfeld")(person.personalInfo.lastName)
@@ -84,7 +83,7 @@ class CsvLineReaderTest extends AnyFlatSpec with Matchers {
   }
 
   "with quotes and comma in the middle of name when only firstName and lastName" should "expected Person with only first name and lastname and remove false, all others are None or empty" in {
-    val reader = new CsvLineReader(List((0, new FirstName), (1, new LastName)).toMap, ",")
+    val reader = CsvLineParser(List((0, new FirstName), (1, new LastName)).toMap)
     val person = assertValidValue(() => reader.readLine("'Mi,sha', Grinfeld"))
     assertResult("Mi,sha")(person.personalInfo.firstName)
     assertResult("Grinfeld")(person.personalInfo.lastName)
@@ -97,7 +96,7 @@ class CsvLineReaderTest extends AnyFlatSpec with Matchers {
   }
 
   "without quotes and First name, Last name and empty field in the middle in the middle" should "expected Person with only first name and lastname and remove false, all others are None or empty" in {
-    val reader = new CsvLineReader(List((0, new FirstName),(1, new MiddleName), (2, new LastName)).toMap, ",")
+    val reader = CsvLineParser(List((0, new FirstName),(1, new MiddleName), (2, new LastName)).toMap)
     val person = assertValidValue(() => reader.readLine("Misha,,Grinfeld"))
     assertResult("Misha")(person.personalInfo.firstName)
     assertResult("Grinfeld")(person.personalInfo.lastName)
@@ -111,12 +110,11 @@ class CsvLineReaderTest extends AnyFlatSpec with Matchers {
   }
 
   "when First Name and Last Name in different places and Tz less than 9 digits" should "expected Person with first, last names and Tz with 0 followed by original value" in {
-    val reader = new CsvLineReader(
-      List(
-        (0, new FirstName),
-        (1, new Tz),
-        (2, new LastName)
-      ).toMap, ",")
+    val reader = CsvLineParser(List(
+            (0, new FirstName),
+            (1, new Tz),
+            (2, new LastName)
+          ).toMap)
     val person = assertValidValue(() => reader.readLine("Misha   ,   12345678    , Grinfeld   "))
     assertResult(person.personalInfo.firstName)("Misha")
     assertResult(person.personalInfo.lastName)("Grinfeld")
@@ -129,12 +127,11 @@ class CsvLineReaderTest extends AnyFlatSpec with Matchers {
   }
 
   "when First Name and Last Name and phone" should "expected Person with first, last names and phone in international form" in {
-    val reader = new CsvLineReader(
-      List(
-        (0, new FirstName),
-        (1, new MobilePhoneHeader("972", "0")),
-        (2, new LastName)
-      ).toMap, ",")
+    val reader = CsvLineParser(List(
+            (0, new FirstName),
+            (1, new MobilePhoneHeader("972", "0")),
+            (2, new LastName)
+          ).toMap)
     val person = assertValidValue(() => reader.readLine("   Misha,(054)4403945, Grinfeld"))
     assertResult(person.personalInfo.firstName)("Misha")
     assertResult(person.personalInfo.lastName)("Grinfeld")
@@ -147,12 +144,11 @@ class CsvLineReaderTest extends AnyFlatSpec with Matchers {
   }
 
   "when First Name and Last Name and tags" should "expected Person with first, last names and rags as list" in {
-    val reader = new CsvLineReader(
-      List(
-        (0, new FirstName),
-        (1, new Tags("\\|")),
-        (2, new LastName)
-      ).toMap, ",")
+    val reader = CsvLineParser(List(
+            (0, new FirstName),
+            (1, new Tags("\\|")),
+            (2, new LastName)
+          ).toMap)
     val person = assertValidValue(() => reader.readLine("Misha, one|two|three, Grinfeld"))
     assertResult(person.personalInfo.firstName)("Misha")
     assertResult(person.personalInfo.lastName)("Grinfeld")
@@ -165,7 +161,7 @@ class CsvLineReaderTest extends AnyFlatSpec with Matchers {
   }
 
   "when Full Name (first name first)" should "expected Person with only first name and lastname and remove false, all others are None or empty" in {
-    val reader = new CsvLineReader(List((0, new FullNameFirstNameFirst())).toMap, ",")
+    val reader = CsvLineParser(List((0, new FullNameFirstNameFirst())).toMap)
     val person = assertValidValue(() => reader.readLine("Misha Grinfeld"))
     assertResult(person.personalInfo.firstName)("Misha")
     assertResult(person.personalInfo.lastName)("Grinfeld")
@@ -178,7 +174,7 @@ class CsvLineReaderTest extends AnyFlatSpec with Matchers {
   }
 
   "when Full Name (last name first)" should "expected Person with only first name and lastname and remove false, all others are None or empty" in {
-    val reader = new CsvLineReader(List((0, new FullNameLastNameFirst("\\|"))).toMap, ",")
+    val reader = CsvLineParser(List((0, new FullNameLastNameFirst("\\|"))).toMap)
     val person = assertValidValue(() => reader.readLine("Grinfeld|Misha"))
     assertResult(person.personalInfo.firstName)("Misha")
     assertResult(person.personalInfo.lastName)("Grinfeld")

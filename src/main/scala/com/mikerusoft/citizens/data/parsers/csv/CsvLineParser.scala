@@ -1,23 +1,24 @@
-package com.mikerusoft.citizens.data.readers.csv
+package com.mikerusoft.citizens.data.parsers.csv
 
 import cats.data.Validated
-import com.mikerusoft.citizens.data.readers.csv.HeaderConverter._
-import com.mikerusoft.citizens.data.readers.csv.Types.{Columns, HeaderItem, Word}
+import com.mikerusoft.citizens.data.parsers.LineParser
+import com.mikerusoft.citizens.data.parsers.csv.HeaderConverter._
+import com.mikerusoft.citizens.model.Types.{Columns, ErrorMsg, HeaderItem, Word}
 import com.mikerusoft.citizens.model.Person
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.annotation.tailrec
 
-class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends LineReader with LazyLogging {
+private class CsvLineParser(val headers: HeaderItem) extends LineParser[Person] with LazyLogging {
 
-  override def readLine(line: String): Validated[String, Person] = {
-    val data: List[(String, Int)] = CsvLineReader.parseCsvLine(line).zipWithIndex
+  override def readLine(line: String): Validated[ErrorMsg, Person] = {
+    val data: List[(String, Int)] = CsvLineParser.parseCsvLine(line).zipWithIndex
       .filter(pair => headers.contains(pair._2))
     parseColumns(data, Person.builder())
   }
 
   @tailrec
-  private def parseColumns (list: List[(String, Int)], builder: Person.Builder): Validated[String, Person] = list match {
+  private def parseColumns (list: List[(String, Int)], builder: Person.Builder): Validated[ErrorMsg, Person] = list match {
     case Nil => builder.buildWith()
     case head :: remainder =>
       val headerValue = head._1
@@ -53,7 +54,11 @@ class CsvLineReader(val headers: HeaderItem, val delimiter: String) extends Line
   }
 }
 
-object CsvLineReader {
+object CsvLineParser {
+
+  def apply(headers: HeaderItem): LineParser[Person] = {
+    new CsvLineParser(headers)
+  }
 
   def parseCsvLine(line: String) : Columns = {
     parseChars(0, line.toCharArray, List()).reverse

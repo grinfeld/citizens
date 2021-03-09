@@ -1,4 +1,4 @@
-package com.mikerusoft.citizens.data.readers.csv
+package com.mikerusoft.citizens.data.parsers.csv
 
 import com.mikerusoft.citizens.model.{Phone, PhoneType}
 

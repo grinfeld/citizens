@@ -4,6 +4,7 @@ import cats.data.Validated
 import cats.implicits.catsSyntaxTuple2Semigroupal
 import com.mikerusoft.citizens.model.Person.FilterBlankString
 import cats.syntax.option._
+import com.mikerusoft.citizens.model.Types.ErrorMsg
 import com.mikerusoft.citizens.model.context.Validation._
 
 case class PersonalInfo(firstName: String, lastName: String, middleName: Option[String], bornYear: Option[Int])
@@ -22,9 +23,7 @@ object PersonalInfo {
     def withMiddleName(middleName: String): Builder = { this.middleName = Option(middleName).filterNotEmpty(); this }
     def bornYear(bornYear: Int): Builder = { this.bornYear = Option(bornYear); this }
 
-    def build():PersonalInfo = new PersonalInfo(firstName.get, lastName.get, middleName, bornYear)
-
-    def buildWith() : Validated[String, PersonalInfo] = {
+    def buildWith() : Validated[ErrorMsg, PersonalInfo] = {
       (firstName.toValid("Empty first name"), lastName.toValid("Empty last name"))
         .mapN((firstName, lastName) => new PersonalInfo(firstName, lastName, middleName, bornYear))
     }

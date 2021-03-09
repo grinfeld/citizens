@@ -5,6 +5,7 @@ import cats.data.Validated.Valid
 import cats.implicits.catsSyntaxTuple3Semigroupal
 import com.mikerusoft.citizens.model.Person.FilterBlankString
 import cats.syntax.option._
+import com.mikerusoft.citizens.model.Types.ErrorMsg
 import com.mikerusoft.citizens.model.context.Validation._
 
 case class Address(country: String, city: String, street: String, buildingNo: Option[String], apartment: Option[String],
@@ -24,15 +25,13 @@ object Address {
     def entrance(entrance: String): Builder = { set(() => this.entrance = Option(entrance).filterNotEmpty()) }
     def neighborhood(neighborhood: String): Builder = { set(() => this.neighborhood = Option(neighborhood).filterNotEmpty()) }
 
-    private def set(f: () => Any): Address.Builder = {
-      f.apply()
+    private def set(setterFunc: () => Any): Address.Builder = {
+      setterFunc.apply()
       built = true;
       this
     }
 
-    def build(): Option[Address] = if (built) Option(Address(country.get, city.get, street.get, buildingNo, apartment, entrance, neighborhood)) else None
-
-    def buildWith() : Validated[String, Option[Address]] = {
+    def buildWith() : Validated[ErrorMsg, Option[Address]] = {
       if (!built)
         return Valid(Option.empty)
       (country.toValid("Empty Country"), city.toValid("Empty City"), street.toValid("Empty Street"))

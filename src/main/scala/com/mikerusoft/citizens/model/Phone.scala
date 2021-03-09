@@ -4,6 +4,7 @@ import cats.data.Validated
 import cats.implicits.catsSyntaxTuple2Semigroupal
 import com.mikerusoft.citizens.model.Person.FilterBlankString
 import cats.syntax.option._
+import com.mikerusoft.citizens.model.Types.ErrorMsg
 import com.mikerusoft.citizens.model.context.Validation._
 
 case class Phone(value: String, `type`: PhoneType) {
@@ -26,9 +27,7 @@ object Phone {
     def value(value: String): Builder = { this.value = Option(value).filterNotEmpty(); this }
     def `type`(`type`: PhoneType): Builder = { this.`type` = Option(`type`); this }
 
-    def build(): Phone = new Phone(value.get, `type`.get)
-
-    def buildWith() : Validated[String, Phone] = {
+    def buildWith() : Validated[ErrorMsg, Phone] = {
       (value.toValid("Invalid phone value"), `type`.toValid("Invalid phone type")).mapN((p, t) => new Phone(p, t))
     }
   }
