@@ -6,8 +6,7 @@ import cats.implicits.{catsSyntaxTuple2Semigroupal, catsSyntaxTuple3Semigroupal}
 import com.mikerusoft.citizens.model.Types.ErrorMsg
 import com.mikerusoft.citizens.model.context.Validation._
 
-case class Person(tz: Option[String], phones: List[Phone], emails: List[String], address: Option[Address], tags: List[String],
-                  remove: Boolean = false, personalInfo: PersonalInfo)
+case class Person(id: Option[Long], tz: Option[String], phones: List[Phone], emails: List[String], address: Option[Address], tags: List[String], remove: Boolean = false, personalInfo: PersonalInfo)
 
 object Person {
   def builder() = new Builder()
@@ -32,7 +31,7 @@ object Person {
       val personalInfoValidated = personalInfo.buildWith()
       val addressValidated = address.buildWith()
       (phonesValidated, personalInfoValidated, addressValidated).mapN((phones, personalInfo, address) =>
-        Person(tz, phones, emails.filterNot(_.isBlank), address, tags.filterNot(_.isBlank), remove, personalInfo)
+        Person(None, tz, phones, emails.filterNot(_.isBlank), address, tags.filterNot(_.isBlank), remove, personalInfo)
       )
     }
   }

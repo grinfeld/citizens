@@ -138,7 +138,7 @@ class CsvLineParserTest extends AnyFlatSpec with Matchers {
     assertResult(None)(person.tz)
     assertResult(None)(person.address)
     assertResult(List())(person.emails)
-    assertResult(person.phones)(List(Phone("972544403945", Phone.MOBILE_TYPE)))
+    assertResult(person.phones)(List(Phone(None, None, "972544403945", Phone.MOBILE_TYPE)))
     assertResult(false)(person.remove)
     assertResult(List())(person.tags)
   }
