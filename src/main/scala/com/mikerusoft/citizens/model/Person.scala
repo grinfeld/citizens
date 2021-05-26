@@ -3,7 +3,7 @@ package com.mikerusoft.citizens.model
 import cats.data.Validated
 import cats.data.Validated.Valid
 import cats.implicits.{catsSyntaxTuple2Semigroupal, catsSyntaxTuple3Semigroupal}
-import com.mikerusoft.citizens.model.Types.ErrorMsg
+import com.mikerusoft.citizens.model.Types.Validation
 import com.mikerusoft.citizens.model.context.Validation._
 
 case class Person(id: Option[Long], tz: Option[String], phones: List[Phone], emails: List[String], address: Option[Address], tags: List[String], remove: Boolean = false, personalInfo: PersonalInfo)
@@ -26,8 +26,8 @@ object Person {
     def withPersonalInfo(personalInfo: PersonalInfo.Builder): Builder = { this.personalInfo = personalInfo; this }
     def withPersonalInfo(personalInfoFieldFunc: PersonalInfo.Builder => Any): Builder = { personalInfoFieldFunc.apply(this.personalInfo); this }
 
-    def buildWith() : Validated[ErrorMsg, Person] = {
-      val phonesValidated: Validated[String, List[Phone]] = phones.map(_.buildWith()).foldLeft(Valid(List[Phone]()).asInstanceOf[Validated[String, List[Phone]]])((acc, ph) => (acc, ph).mapN((ls, p) => p :: ls))
+    def buildWith() : Validation[Person] = {
+      val phonesValidated: Validated[String, List[Phone]] = phones.map(_.buildWith()).foldLeft(Valid(List[Phone]()).asInstanceOf[Validation[List[Phone]]])((acc, ph) => (acc, ph).mapN((ls, p) => p :: ls))
       val personalInfoValidated = personalInfo.buildWith()
       val addressValidated = address.buildWith()
       (phonesValidated, personalInfoValidated, addressValidated).mapN((phones, personalInfo, address) =>

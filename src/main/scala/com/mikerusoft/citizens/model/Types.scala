@@ -1,5 +1,6 @@
 package com.mikerusoft.citizens.model
 
+import cats.data.Validated
 import com.mikerusoft.citizens.data.parsers.csv.Header
 
 object Types {
@@ -10,4 +11,6 @@ object Types {
   type Columns = List[String]
 
   type ErrorMsg = String
+
+  type Validation[T] = Validated[ErrorMsg, T]
 }
