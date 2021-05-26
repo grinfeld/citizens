@@ -109,8 +109,8 @@ object HeaderConverter {
   }
 
   implicit object ApartmentNoConverter extends HeaderConverter[ApartmentNo] {
-    override def convert(header: ApartmentNo, value: String, builder: Person.Builder): Person.Builder = Option(value).map(_.trim)
-      .toBuilder(v => builder.withAddress(_.apartment(v)))(builder)
+    override def convert(header: ApartmentNo, value: String, builder: Person.Builder): Person.Builder =
+      Option(value).map(_.trim).tryIt(_.toInt).toBuilder(v => builder.withAddress(_.apartment(v)))(builder)
   }
 
   implicit object EntranceConverter extends HeaderConverter[Entrance] {
