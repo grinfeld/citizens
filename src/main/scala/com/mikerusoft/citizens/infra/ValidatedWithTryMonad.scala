@@ -40,7 +40,7 @@ case class ValidatedWithTryMonad[I, O](action: I => Validation[O]) {
 
   def run(input: I): Validation[O] = action(input)
 
-  def run(input: I, onSuccess: O => Unit): Validation[O] = {
+  def run(input: I)(onSuccess: O => Unit): Validation[O] = {
     val result = action(input)
     result match {
       case Valid(r) => onSuccess(r)

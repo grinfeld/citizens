@@ -1,8 +1,7 @@
 package com.mikerusoft.citizens.data.outputs
 
-import cats.data.Validated
-import com.mikerusoft.citizens.model.Types.ErrorMsg
+import com.mikerusoft.citizens.model.Types.Validation
 
 trait DataOutput[T, O] {
-  def outputTo(elem: T): Validated[ErrorMsg, O]
+  def outputTo(elem: T): Validation[O]
 }
