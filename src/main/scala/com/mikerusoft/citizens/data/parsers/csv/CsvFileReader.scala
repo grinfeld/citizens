@@ -1,6 +1,5 @@
 package com.mikerusoft.citizens.data.parsers.csv
 
-import cats.data.Validated.{Invalid, Valid}
 import com.mikerusoft.citizens.data.parsers.LineParser
 import com.mikerusoft.citizens.model.Types._
 
