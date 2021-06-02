@@ -15,7 +15,19 @@ object Types {
 
   type Validation[T] = Validated[ErrorMsg, T]
 
-  def Valid[T](t: T): Validation[T] = catsValid(t)
+  object Valid {
+    def apply[T](t: T): Validation[T] = catsValid(t)
+    def unapply[T](v: Validation[T]): Option[T] = v match {
+      case catsValid(v) => Some(v)
+      case catsInvalid(_) => None
+    }
+  }
 
-  def Invalid[T](t: String): Validation[T] = catsInvalid(t)
+  object Invalid {
+    def apply[T](error: ErrorMsg): Validation[T] = catsInvalid(error)
+    def unapply[T](v: Validation[T]): Option[ErrorMsg] = v match {
+      case catsValid(v) => None
+      case catsInvalid(e) => Some(e)
+    }
+  }
 }

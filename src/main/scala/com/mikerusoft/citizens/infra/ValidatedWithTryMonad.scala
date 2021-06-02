@@ -1,8 +1,7 @@
 package com.mikerusoft.citizens.infra
 
-import cats.data.Validated.{Invalid, Valid}
 import cats.implicits.catsSyntaxTuple2Semigroupal
-import com.mikerusoft.citizens.model.Types.Validation
+import com.mikerusoft.citizens.model.Types.{Invalid, Valid, Validation}
 
 import scala.language.higherKinds
 import scala.util.{Failure, Success, Try}
@@ -22,7 +21,7 @@ case class ValidatedWithTryMonad[I, O](action: I => Validation[O]) {
   def fold[B](func: O => Iterator[Validation[B]]): ValidatedWithTryMonad[I, List[B]] = {
     new ValidatedWithTryMonad[I, List[B]]((input: I) => action(input) match {
       case Valid(i) =>
-        func(i).foldLeft(Valid(List[B]()).asInstanceOf[Validation[List[B]]])((acc, ph) => (acc, ph).mapN((ls, p) => p :: ls))
+        func(i).foldLeft(Valid(List[B]()))((acc, ph) => (acc, ph).mapN((ls, p) => p :: ls))
       case Invalid(m) => Invalid(m)
     })
   }
