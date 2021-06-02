@@ -2,9 +2,9 @@ package com.mikerusoft.citizens.data.parsers.csv
 
 import cats.data.Validated.{Invalid, Valid}
 import com.mikerusoft.citizens.data.parsers.LineParser
-import com.mikerusoft.citizens.model.Types.{HeaderItem, Validation}
+import com.mikerusoft.citizens.model.Types._
 
-case class CsvFileReader[T] private (skipHeaders: Boolean, lines: Iterator[String], lineParser: LineParser[T]){
+class CsvFileReader[T] (val skipHeaders: Boolean, val lines: Iterator[String], val lineParser: LineParser[T]){
   def mapLine[B](func: T => Validation[B]): Iterator[Validation[B]] = lines.map(line => lineParser.readLine(line) match {
     case Valid(a) => func(a)
     case Invalid(e) => Invalid(e)
