@@ -7,11 +7,39 @@ import java.time.temporal.{ChronoField, ChronoUnit}
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
-trait HeaderConverter[T <: Header] {
+trait HeaderConverter[T] {
   def convert(header: T, value: String, builder: Person.Builder): Person.Builder
 }
 
 object HeaderConverter {
+
+  implicit object HeaderMainConverter extends HeaderConverter[Header] {
+    override def convert(header: Header, value: String, builder: Person.Builder): Person.Builder = {
+      header match {
+        case header: Tz => header.toHeader(value, builder)
+        case header: Email => header.toHeader(value, builder)
+        case header: FullNameFirstNameFirst => header.toHeader(value, builder)
+        case header: FullNameLastNameFirst => header.toHeader(value, builder)
+        case header: FirstName => header.toHeader(value, builder)
+        case header: LastName => header.toHeader(value, builder)
+        case header: MiddleName => header.toHeader(value, builder)
+        case header: Age => header.toHeader(value, builder)
+        case header: BornYear => header.toHeader(value, builder)
+        case header: BirthDay => header.toHeader(value, builder)
+        case header: Remove => header.toHeader(value, builder)
+        case header: Tags => header.toHeader(value, builder)
+        case header: City => header.toHeader(value, builder)
+        case header: Street => header.toHeader(value, builder)
+        case header: BuildingNo => header.toHeader(value, builder)
+        case header: ApartmentNo => header.toHeader(value, builder)
+        case header: Entrance => header.toHeader(value, builder)
+        case header: NeighborhoodName => header.toHeader(value, builder)
+        case header: MobilePhoneHeader => header.toHeader(value, builder)
+        case header: HomePhoneHeader => header.toHeader(value, builder)
+        case header: WorkPhoneHeader => header.toHeader(value, builder)
+      }
+    }
+  }
 
   implicit object RemoveConverter extends HeaderConverter[Remove] {
     override def convert(header: Remove, value: String, builder: Person.Builder): Person.Builder = {

@@ -4,6 +4,7 @@ import com.mikerusoft.citizens.data.parsers.LineParser
 import com.mikerusoft.citizens.data.parsers.csv.HeaderConverter._
 import com.mikerusoft.citizens.model.Types.{Columns, HeaderItem, Validation, Word}
 import com.mikerusoft.citizens.model.Person
+import com.mikerusoft.citizens.data.parsers.csv.CsvLineParser._
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.annotation.tailrec
@@ -20,41 +21,19 @@ import scala.annotation.tailrec
   private def parseColumns (list: List[(String, Int)], builder: Person.Builder): Validation[Person] = list match {
     case Nil => builder.buildWith()
     case head :: remainder =>
-      val headerValue = head._1
-      headers.get(head._2) match {
+      val headerValue = head.value
+      headers.get(head.index) match {
         case None => parseColumns(remainder, builder)
-        case Some(p) =>
-          // todo: how to replace all this pattern matching with type-classes solution? till now - no solution
-          //parseColumns(remainder, p.toHeader(headerValue, builder))
-          p match {
-            case header: Tz => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: Email => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: FullNameFirstNameFirst => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: FullNameLastNameFirst => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: FirstName => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: LastName => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: MiddleName => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: Age => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: BornYear => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: BirthDay => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: Remove => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: Tags => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: City => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: Street => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: BuildingNo => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: ApartmentNo => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: Entrance => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: NeighborhoodName => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: MobilePhoneHeader => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: HomePhoneHeader => parseColumns(remainder, header.toHeader(headerValue, builder))
-            case header: WorkPhoneHeader => parseColumns(remainder, header.toHeader(headerValue, builder))
-          }
+        case Some(header) => parseColumns(remainder, header.toHeader(headerValue, builder))
       }
   }
-   
 }
 
 object CsvLineParser {
+  implicit class HeaderItemWrapper(t2: (String, Int)) {
+    def value: String = t2._1
+    def index: Int = t2._2
+  }
 
   def apply(headers: HeaderItem): LineParser[Person] = {
     new CsvLineParser(headers)
