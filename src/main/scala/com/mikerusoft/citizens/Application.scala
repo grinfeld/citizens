@@ -20,36 +20,42 @@ object Application extends App with LazyLogging {
   val fileName: String = "myFile.csv"
   val maxErrorsToStop: Int = 100;
 
-  // first bad version
-  // num of valid records + accumulated error string
-  val result1: Validation[Int] = Try(Source.fromFile(fileName)) match {
-    case Failure(exception) => Invalid(exception.getMessage)
-    case Success(value) =>
-      value.getLines().map(line =>
-        input.readLine(line)).map {
-          case Valid(person) => output.outputTo(person)
-          case Invalid(e) => Invalid(e)
-        }.map {
-          case Valid(_) => Valid(1)
-          case Invalid(e) => Invalid(e)
-        }
-        .fold(Valid(0))((acc, vl) => (acc, vl).mapN( (first, second) => first + second))
+  def option1(): Validation[Int] = {
+    // first bad version
+    // num of valid records + accumulated error string
+    val result1: Validation[Int] =
+      Try(Source.fromFile(fileName)) match {
+        case Failure(exception) => Invalid(exception.getMessage)
+        case Success(fileReader) =>
+          fileReader.getLines().map(line =>
+            input.readLine(line)).map {
+            case Valid(person) => output.outputTo(person)
+            case Invalid(e) => Invalid(e)
+          }.map {
+            case Valid(_) => Valid(1)
+            case Invalid(e) => Invalid(e)
+          }
+          .fold(Valid(0))((acc, vl) => (acc, vl).mapN( (first, second) => first + second))
+
+      }
+    result1
   }
 
-  // second bad version
-  // num of valid records + accumulated error string
-  val result2 =
-    ValidatedWithTryMonad.withF((fileName: String) => Source.fromFile(fileName))
-    .map(source => source.getLines())
-    .map(lines => CsvFileReader(skipHeader, lines)(input))
-    .map(fileReader => fileReader.mapLine(p => output.outputTo(p)))
-    .map(it => it.map {
-        case Valid(_) => Valid(1)
-        case Invalid(e) => Invalid(e).asInstanceOf[Validation[Int]]
-      })
-    .flatMap(it =>
-      it.fold(Valid(0))((acc, vl) => (acc, vl).mapN( (first, second) => first + second))
-    )
-    .run(fileName)
+  def option2(): Validation[Int] = {
+    // second bad version
+    // num of valid records + accumulated error string
+    val result2: Validation[Int] =
+      ValidatedWithTryMonad.startFrom((fileName: String) => Source.fromFile(fileName))
+        .map(source => source.getLines())
+        .map(lines => CsvFileReader(skipHeader, lines)(input))
+        .map(parsedPersons => parsedPersons.mapLine(p => output.outputTo(p)))
+        .map(validatedPersons => validatedPersons.map {
+          case Valid(_) => Valid(1)
+          case Invalid(e) => Invalid(e).asInstanceOf[Validation[Int]]
+        })
+        .foldM(0)((first, second:Int) => first + second)(it => it)
+        .run(fileName)
+    result2
   }
+}
 

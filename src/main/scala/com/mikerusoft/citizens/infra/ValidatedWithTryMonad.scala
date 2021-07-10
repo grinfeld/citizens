@@ -19,9 +19,13 @@ case class ValidatedWithTryMonad[I, O](action: I => Validation[O]) {
   }
 
   def fold[B](func: O => Iterator[Validation[B]]): ValidatedWithTryMonad[I, List[B]] = {
-    new ValidatedWithTryMonad[I, List[B]]((input: I) => action(input) match {
+    foldM(List[B]())((ls, p:B) => p :: ls)(func)
+  }
+
+  def foldM[B, L](z: L)(agg: (L, B) => L)(func: O => Iterator[Validation[B]]): ValidatedWithTryMonad[I, L] = {
+    new ValidatedWithTryMonad[I, L]((input: I) => action(input) match {
       case Valid(i) =>
-        func(i).foldLeft(Valid(List[B]()))((acc, ph) => (acc, ph).mapN((ls, p) => p :: ls))
+        func(i).foldLeft(Valid(z))((acc, ph) => (acc, ph).mapN((ls, p) => agg.apply(ls, p)))
       case Invalid(m) => Invalid(m)
     })
   }
@@ -38,18 +42,10 @@ case class ValidatedWithTryMonad[I, O](action: I => Validation[O]) {
   }
 
   def run(input: I): Validation[O] = action(input)
-
-/*  def run(input: I)(onSuccess: O => Unit): Validation[O] = {
-    val result = action(input)
-    result match {
-      case Valid(r) => onSuccess(r)
-    }
-    result
-  }*/
 }
 
 object ValidatedWithTryMonad {
-  def withF[A, B](func: A => B): ValidatedWithTryMonad[A, B] =
+  def startFrom[A, B](func: A => B): ValidatedWithTryMonad[A, B] =
     ValidatedWithTryMonad(
       (input: A) => Try(func(input)) match {
         case Success(value) => Valid(value)
