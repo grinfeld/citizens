@@ -45,7 +45,7 @@ case class ValidatedWithTryMonad[I, O](action: I => Validation[O]) {
 }
 
 object ValidatedWithTryMonad {
-  def startFrom[A, B](func: A => B): ValidatedWithTryMonad[A, B] =
+  def startFromAction[A, B](func: A => B): ValidatedWithTryMonad[A, B] =
     ValidatedWithTryMonad(
       (input: A) => Try(func(input)) match {
         case Success(value) => Valid(value)

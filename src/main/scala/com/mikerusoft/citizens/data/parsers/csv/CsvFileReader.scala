@@ -12,4 +12,5 @@ class CsvFileReader[T] (val skipHeaders: Boolean, val lines: Iterator[String], v
 
 object CsvFileReader {
   def apply[T](skipHeaders: Boolean, lines: Iterator[String])(implicit lineParser: LineParser[T]): CsvFileReader[T] = new CsvFileReader(skipHeaders, lines, lineParser)
+  def parseLines[T](skipHeaders: Boolean, lines: Iterator[String])(implicit lineParser: LineParser[T]): CsvFileReader[T] = new CsvFileReader(skipHeaders, lines, lineParser)
 }

@@ -45,9 +45,9 @@ object Application extends App with LazyLogging {
     // second bad version
     // num of valid records + accumulated error string
     val result2: Validation[Int] =
-      ValidatedWithTryMonad.startFrom((fileName: String) => Source.fromFile(fileName))
+      ValidatedWithTryMonad.startFromAction((fileName:String) => Source.fromFile(fileName))
         .map(source => source.getLines())
-        .map(lines => CsvFileReader(skipHeader, lines)(input))
+        .map(lines => CsvFileReader.parseLines(skipHeader, lines)(input))
         .map(parsedPersons => parsedPersons.mapLine(p => output.outputTo(p)))
         .map(validatedPersons => validatedPersons.map {
           case Valid(_) => Valid(1)
