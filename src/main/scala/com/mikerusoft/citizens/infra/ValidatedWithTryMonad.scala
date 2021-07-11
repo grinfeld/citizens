@@ -18,6 +18,8 @@ case class ValidatedWithTryMonad[I, O](action: I => Validation[O]) {
     })
   }
 
+  def convert[B](func: O => B): ValidatedWithTryMonad[I, B] = map(func)
+
   def fold[B](func: O => Iterator[Validation[B]]): ValidatedWithTryMonad[I, List[B]] = {
     foldM(List[B]())((ls, p:B) => p :: ls)(func)
   }
