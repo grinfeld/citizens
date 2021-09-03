@@ -6,15 +6,15 @@ import java.time.format.DateTimeFormatter
 
 sealed trait Header
 final case class Tz() extends Header
-final case class FullNameFirstNameFirst(val delimiter: String = " ") extends Header
+final case class FullNameFirstNameFirst(delimiter: String = " ") extends Header
 
-final case class FullNameLastNameFirst(val delimiter: String = " ") extends Header
+final case class FullNameLastNameFirst(delimiter: String = " ") extends Header
 final case class FirstName() extends Header
 final case class LastName() extends Header
 final case class MiddleName() extends Header
 final case class Age() extends Header
 final case class BornYear() extends Header
-final case class BirthDay(val _dateFormat: String) extends Header {
+final case class BirthDay(_dateFormat: String) extends Header {
   val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern(_dateFormat)
 }
 final case class City() extends Header

@@ -161,7 +161,7 @@ class CsvLineParserTest extends AnyFlatSpec with Matchers {
   }
 
   "when Full Name (first name first)" should "expected Person with only first name and lastname and remove false, all others are None or empty" in {
-    val reader = CsvLineParser(List((0, new FullNameFirstNameFirst())).toMap)
+    val reader = CsvLineParser(List((0, FullNameFirstNameFirst())).toMap)
     val person = assertValidValue(() => reader.readLine("Misha Grinfeld"))
     assertResult(person.personalInfo.firstName)("Misha")
     assertResult(person.personalInfo.lastName)("Grinfeld")
@@ -174,7 +174,7 @@ class CsvLineParserTest extends AnyFlatSpec with Matchers {
   }
 
   "when Full Name (last name first)" should "expected Person with only first name and lastname and remove false, all others are None or empty" in {
-    val reader = CsvLineParser(List((0, new FullNameLastNameFirst("\\|"))).toMap)
+    val reader = CsvLineParser(List((0, FullNameLastNameFirst("\\|"))).toMap)
     val person = assertValidValue(() => reader.readLine("Grinfeld|Misha"))
     assertResult(person.personalInfo.firstName)("Misha")
     assertResult(person.personalInfo.lastName)("Grinfeld")

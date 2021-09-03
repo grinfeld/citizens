@@ -4,7 +4,7 @@ import cats.data.Validated
 import cats.implicits.catsSyntaxTuple3Semigroupal
 import com.mikerusoft.citizens.model.Person.FilterBlankString
 import cats.syntax.option._
-import com.mikerusoft.citizens.model.Types.ErrorMsg
+import com.mikerusoft.citizens.model.Types.{ErrorMsg, Valid}
 import com.mikerusoft.citizens.model.context.Validation._
 
 case class Address(personId: Option[Int], country: String, city: String, street: String, buildingNo: Option[String], apartment: Option[Int], entrance: Option[String], neighborhood: Option[String])
@@ -23,8 +23,11 @@ object Address {
     def personId(personId: Int): Builder = { copy(personId = Option(personId)) }
 
     def buildWith() : Validated[ErrorMsg, Option[Address]] = {
-      (country.toValid("Empty Country"), city.toValid("Empty City"), street.toValid("Empty Street"))
-        .mapN((country, city, street) => Option(new Address(None, country, city, street, buildingNo, apartment, entrance, neighborhood)))
+      this match {
+        case Builder(None, None, None, None, None, None, None, None) => Valid(Option.empty)
+        case _ => (country.toValid("Empty Country"), city.toValid("Empty City"), street.toValid("Empty Street"))
+          .mapN((country, city, street) => Option(new Address(None, country, city, street, buildingNo, apartment, entrance, neighborhood)))
+      }
     }
   }
 }

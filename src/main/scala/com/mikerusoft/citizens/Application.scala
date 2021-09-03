@@ -29,12 +29,12 @@ object Application extends App with LazyLogging {
         case Success(fileReader) =>
           fileReader.getLines().map(line =>
             input.readLine(line)).map {
-            case Valid(person) => output.outputTo(person)
-            case Invalid(e) => Invalid(e)
-          }.map {
-            case Valid(_) => Valid(1)
-            case Invalid(e) => Invalid(e)
-          }
+              case Valid(person) => output.outputTo(person)
+              case Invalid(e) => Invalid(e)
+            }.map {
+              case Valid(_) => Valid(1)
+              case Invalid(e) => Invalid(e)
+            }
           .fold(Valid(0))((acc, vl) => (acc, vl).mapN( (first, second) => first + second))
 
       }
