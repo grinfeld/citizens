@@ -36,9 +36,9 @@ class CsvLineParserTest extends AnyFlatSpec with Matchers {
 
   "when invalid mobile phone" should "expected invalid phone value error message" in {
     val reader = CsvLineParser(List(
-            (0, new FirstName),
-            (1, new MobilePhoneHeader("972", "0")),
-            (2, new LastName)
+            (0, FirstName()),
+            (1, MobilePhoneHeader("972", "0")),
+            (2, LastName())
           ).toMap)
     assertInvalidValue(() => reader.readLine("   Misha,fgdfgdf, Grinfeld"), "Invalid phone value")
   }
@@ -111,9 +111,9 @@ class CsvLineParserTest extends AnyFlatSpec with Matchers {
 
   "when First Name and Last Name in different places and Tz less than 9 digits" should "expected Person with first, last names and Tz with 0 followed by original value" in {
     val reader = CsvLineParser(List(
-            (0, new FirstName),
-            (1, new Tz),
-            (2, new LastName)
+            (0,  FirstName()),
+            (1, Tz()),
+            (2, LastName())
           ).toMap)
     val person = assertValidValue(() => reader.readLine("Misha   ,   12345678    , Grinfeld   "))
     assertResult(person.personalInfo.firstName)("Misha")

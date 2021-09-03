@@ -11,18 +11,17 @@ case class PersonalInfo(personId: Option[Long], firstName: String, lastName: Str
 
 object PersonalInfo {
 
-  def builder(): Builder = new Builder()
+  def builder(): Builder = Builder(None, None, None, None, None)
 
-  class Builder(var personId: Option[Long], var firstName: Option[String], var lastName: Option[String], var middleName: Option[String], var bornYear: Option[Int]) {
-    def this() = this(None, None, None, None, None)
+  case class Builder(var personId: Option[Long], var firstName: Option[String], var lastName: Option[String], var middleName: Option[String], var bornYear: Option[Int]) {
 
-    def withFirstName(firstName: String): Builder = { this.firstName = Option(firstName).filterNotEmpty(); this }
-    def firstName(firstName: Option[String]): Builder = { this.firstName = firstName.filterNotEmpty(); this }
-    def withLastName(lastName: String): Builder = { this.lastName = Option(lastName).filterNotEmpty(); this }
-    def lastName(lastName: Option[String]): Builder = { this.lastName = lastName.filterNotEmpty(); this }
-    def withMiddleName(middleName: String): Builder = { this.middleName = Option(middleName).filterNotEmpty(); this }
-    def bornYear(bornYear: Int): Builder = { this.bornYear = Option(bornYear); this }
-    def personId(personId: Long): Builder = { this.personId = Option(personId); this }
+    def withFirstName(firstName: String): Builder = { copy(firstName = Option(firstName).filterNotEmpty())}
+    def firstName(firstName: Option[String]): Builder = { copy(firstName = firstName.filterNotEmpty()) }
+    def withLastName(lastName: String): Builder = { copy(lastName = Option(lastName).filterNotEmpty()) }
+    def lastName(lastName: Option[String]): Builder = { copy(lastName = lastName.filterNotEmpty()) }
+    def withMiddleName(middleName: String): Builder = { copy(middleName = Option(middleName).filterNotEmpty()) }
+    def bornYear(bornYear: Int): Builder = { copy(bornYear = Option(bornYear)) }
+    def personId(personId: Long): Builder = { copy(personId = Option(personId)) }
 
     def buildWith() : Validated[ErrorMsg, PersonalInfo] = {
       (firstName.toValid("Empty first name"), lastName.toValid("Empty last name"))

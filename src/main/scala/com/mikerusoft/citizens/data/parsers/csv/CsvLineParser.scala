@@ -14,17 +14,17 @@ import scala.annotation.tailrec
   override def readLine(line: String): Validation[Person] = {
     val data: List[(String, Int)] = CsvLineParser.parseCsvLine(line).zipWithIndex
       .filter(pair => headers.contains(pair._2))
-    parseColumns(data, Person.builder())
+    parseColumns(data)(Person.builder())
   }
 
   @tailrec
-  private def parseColumns (list: List[(String, Int)], builder: Person.Builder): Validation[Person] = list match {
+  private def parseColumns (list: List[(String, Int)])(implicit builder: Person.Builder): Validation[Person] = list match {
     case Nil => builder.buildWith()
     case head :: remainder =>
       val headerValue = head.value
       headers.get(head.index) match {
-        case None => parseColumns(remainder, builder)
-        case Some(header) => parseColumns(remainder, header.toHeader(headerValue, builder))
+        case None => parseColumns(remainder)
+        case Some(header) => parseColumns(remainder)(header.toHeader(headerValue))
       }
   }
 }

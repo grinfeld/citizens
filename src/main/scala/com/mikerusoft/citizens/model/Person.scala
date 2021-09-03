@@ -9,22 +9,20 @@ import com.mikerusoft.citizens.model.context.Validation._
 case class Person(id: Option[Long], tz: Option[String], phones: List[Phone], emails: List[String], address: Option[Address], tags: List[String], remove: Boolean = false, personalInfo: PersonalInfo)
 
 object Person {
-  def builder() = new Builder()
+  def builder(): Builder = Builder(None, List(), List(), Address.builder(), List(), false, PersonalInfo.builder())
 
-  class Builder(var tz: Option[String], var phones: List[Phone.Builder], var emails: List[String], var address: Address.Builder,
+  case class Builder(var tz: Option[String], var phones: List[Phone.Builder], var emails: List[String], var address: Address.Builder,
                       var tags: List[String], var remove: Boolean, var personalInfo: PersonalInfo.Builder) {
 
-    def this() = this(None, List(), List(), Address.builder(), List(), false, PersonalInfo.builder())
-
-    def withTz(tz: String): Builder = { this.tz = Option(tz).filterNotEmpty(); this }
-    def withAddress(address: Address.Builder): Builder = { this.address = address; this }
-    def withAddress(updateFieldFunc: Address.Builder => Unit): Builder = { updateFieldFunc.apply(this.address); this }
-    def withPhones(phones: List[Phone.Builder]): Builder = { this.phones = phones; this }
-    def withEmails(emails: List[String]): Builder = { this.emails = emails; this }
+    def withTz(tz: String): Builder = { copy(tz = Option(tz).filterNotEmpty()) }
+    def withAddress(address: Address.Builder): Builder = { copy(address = address) }
+    def withAddressField(updateFieldFunc: Address.Builder => Address.Builder): Builder = { copy(address = updateFieldFunc.apply(address)) }
+    def withPhones(phones: List[Phone.Builder]): Builder = { copy(phones = phones) }
+    def withEmails(emails: List[String]): Builder = { copy(emails = emails) }
     def withTags(tags: List[String]): Builder = { this.tags = tags; this }
-    def withRemove(remove: Boolean): Builder = { this.remove = remove; this }
-    def withPersonalInfo(personalInfo: PersonalInfo.Builder): Builder = { this.personalInfo = personalInfo; this }
-    def withPersonalInfo(personalInfoFieldFunc: PersonalInfo.Builder => Any): Builder = { personalInfoFieldFunc.apply(this.personalInfo); this }
+    def withRemove(remove: Boolean): Builder = { copy(remove = remove) }
+    def withPersonalInfo(personalInfo: PersonalInfo.Builder): Builder = { copy(personalInfo = personalInfo) }
+    def withPersonalInfoField(personalInfoFieldFunc: PersonalInfo.Builder => PersonalInfo.Builder): Builder = { copy(personalInfo = personalInfoFieldFunc.apply(personalInfo)) }
 
     def buildWith() : Validation[Person] = {
       val phonesValidated: Validated[String, List[Phone]] = phones.map(_.buildWith()).foldLeft(Valid(List[Phone]()).asInstanceOf[Validation[List[Phone]]])((acc, ph) => (acc, ph).mapN((ls, p) => p :: ls))
