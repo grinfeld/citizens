@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:latest
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: misha
+      MYSQL_DATABASE: misha
+      MYSQL_USER: misha
+      MYSQL_PASSWORD: misha
+
+volumes:
+  db_data: {}
