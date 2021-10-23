@@ -6,6 +6,7 @@ trait DBAction[Status] {
   def createConnection[T, B >: DBAction[ConnReady]](): Validation[B]
   def createTableIfNotExists[T, B >: DBAction[TableReady]](db: DBAction[ConnReady]): Validation[B]
   def insertOfAutoIncrement[P](db: DBAction[TableReady], insertStatement: String): Validation[Int]
+  def selectUnique[P](db: DBAction[TableReady], selectStatement: String): Validation[P]
 }
 
 sealed trait Status

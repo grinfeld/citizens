@@ -1,6 +1,8 @@
 package com.mikerusoft.citizens.data.db
 import cats.effect.{ContextShift, IO}
+import com.mikerusoft.citizens.data.db.DoobieDbAction.{Pers, SqlToString}
 import doobie.implicits._
+import doobie.util._
 import doobie.syntax._
 import com.mikerusoft.citizens.model.Types.{Invalid, Valid, Validation}
 import doobie.util.fragment
@@ -8,8 +10,6 @@ import doobie.util.fragment
 import scala.concurrent.ExecutionContext
 
 final case class DoobieDbAction[S] private[db] (transactor: doobie.Transactor[IO]) extends DBAction[S] {
-
-  case class Pers(id: Int, name: String)
 
   implicit def contextShift: ContextShift[IO] =
     IO.contextShift(ExecutionContext.global)
@@ -23,14 +23,25 @@ final case class DoobieDbAction[S] private[db] (transactor: doobie.Transactor[IO
   }
 
   override def insertOfAutoIncrement[P](db: DBAction[TableReady], insertStatement: String): Validation[Int] = {
-    new SqlInterpolator(new StringContext(insertStatement)).sql().update.run.transact(transactor).attemptSql.unsafeRunSync() match {
+    insertStatement.toSql.update.run.transact(transactor).attemptSql.unsafeRunSync() match {
       case Right(value) => Valid(value)
+      case Left(exception) => Invalid(exception.getMessage)
+    }
+  }
+
+  override def selectUnique[P](db: DBAction[TableReady], selectStatement: String): Validation[P] = {
+    //selectStatement.toSql.query[Pers].unique.transact(transactor).attemptSql.unsafeRunSync() match {
+    selectStatement.toSql.query[P].unique.transact(transactor).attemptSql.unsafeRunSync() match {
+      case Right(value) => Valid(value)
+      //case Right(value) => Valid(value.asInstanceOf[P])
       case Left(exception) => Invalid(exception.getMessage)
     }
   }
 }
 
 object DoobieDbAction {
+  case class Pers(id: Int, name: String)
+
   def apply(trans: () => doobie.Transactor[IO]): Validation[DBAction[ConnReady]] = {
     new DoobieDbAction(trans()).createConnection()
   }

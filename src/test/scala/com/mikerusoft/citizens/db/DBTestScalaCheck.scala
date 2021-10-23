@@ -3,11 +3,10 @@ package com.mikerusoft.citizens.db
 import cats.data.Validated
 import cats.effect.IO
 import cats.effect._
-import com.mikerusoft.citizens.data.db.DoobieDbAction.SqlToString
+import com.mikerusoft.citizens.data.db.DoobieDbAction.Pers
 import com.mikerusoft.citizens.data.db.{DBAction, DoobieDbAction, TableReady}
 import com.mikerusoft.citizens.model.Types.{ErrorMsg, Invalid, Valid}
 import doobie._
-import doobie.implicits._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -27,8 +26,6 @@ class DBTestScalaCheck extends AnyFlatSpec with Matchers with doobie.scalatest.I
     )
   }
 
-  case class Pers(id: Int, name: String)
-
   "stam test" should "with doobie and H2" in {
 
     val db: Validated[ErrorMsg, DBAction[TableReady]] = DoobieDbAction(() => transactor).andThen(db => db.createTableIfNotExists(db))
@@ -37,10 +34,10 @@ class DBTestScalaCheck extends AnyFlatSpec with Matchers with doobie.scalatest.I
       case Valid(db) =>
         db.insertOfAutoIncrement(db, "insert into person (id, name) values (null, 'Misha')") match {
           case Valid(id) =>
-            s"select id,name from person where id=$id".toSql.query[Pers].unique.transact(transactor).attemptSql.unsafeRunSync() match {
-              case Right(p) => println(p)
-              case Left(exception) => println(exception.getMessage)
-          }
+            db.selectUnique(db, s"select id,name from person where id=$id") match {
+              case Valid(a) => println(a)
+              case Invalid(e) => println(e)
+            }
           case Invalid(e) => println(e)
         }
       case Invalid(error) => println(error)
