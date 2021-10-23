@@ -9,7 +9,7 @@ import com.mikerusoft.citizens.model.context.Validation._
 case class Person(id: Option[Long], tz: Option[String], phones: List[Phone], emails: List[String], address: Option[Address], tags: List[String], remove: Boolean = false, personalInfo: PersonalInfo)
 
 object Person {
-  def builder(): Builder = Builder(None, List(), List(), Address.builder(), List(), false, PersonalInfo.builder())
+  def builder(): Builder = Builder(None, List(), List(), Address.builder(), List(), remove = false, PersonalInfo.builder())
 
   case class Builder(var tz: Option[String], var phones: List[Phone.Builder], var emails: List[String], var address: Address.Builder,
                       var tags: List[String], var remove: Boolean, var personalInfo: PersonalInfo.Builder) {

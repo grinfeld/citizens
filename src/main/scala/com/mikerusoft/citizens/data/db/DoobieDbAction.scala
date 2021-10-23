@@ -2,7 +2,6 @@ package com.mikerusoft.citizens.data.db
 import cats.effect.{ContextShift, IO}
 import com.mikerusoft.citizens.data.db.DoobieDbAction.{Pers, SqlToString}
 import doobie.implicits._
-import doobie.util._
 import doobie.syntax._
 import com.mikerusoft.citizens.model.Types.{Invalid, Valid, Validation}
 import doobie.util.fragment
@@ -15,8 +14,8 @@ final case class DoobieDbAction[S] private[db] (transactor: doobie.Transactor[IO
     IO.contextShift(ExecutionContext.global)
 
   override def createConnection[T, B >: DBAction[ConnReady]](): Validation[B] = Valid(new DoobieDbAction[ConnReady](transactor))
-  override def createTableIfNotExists[T, B >: DBAction[TableReady]](db: DBAction[ConnReady]): Validation[B] = {
-    sql"CREATE TABLE person (id INT auto_increment, name VARCHAR(256))".update.run.transact(transactor).attemptSql.unsafeRunSync() match {
+  override def createTable[T, B >: DBAction[TableReady]](db: DBAction[ConnReady], sql: String): Validation[B] = {
+    sql.toSql.update.run.transact(transactor).attemptSql.unsafeRunSync() match {
       case Right(_) => Valid(new DoobieDbAction[TableReady](transactor))
       case Left(exception) => Invalid(exception.getMessage)
     }
@@ -30,10 +29,10 @@ final case class DoobieDbAction[S] private[db] (transactor: doobie.Transactor[IO
   }
 
   override def selectUnique[P](db: DBAction[TableReady], selectStatement: String): Validation[P] = {
-    //selectStatement.toSql.query[Pers].unique.transact(transactor).attemptSql.unsafeRunSync() match {
-    selectStatement.toSql.query[P].unique.transact(transactor).attemptSql.unsafeRunSync() match {
-      case Right(value) => Valid(value)
-      //case Right(value) => Valid(value.asInstanceOf[P])
+    selectStatement.toSql.query[Pers].unique.transact(transactor).attemptSql.unsafeRunSync() match {
+    //selectStatement.toSql.query[P].unique.transact(transactor).attemptSql.unsafeRunSync() match {
+      //case Right(value) => Valid(value)
+      case Right(value) => Valid(value.asInstanceOf[P])
       case Left(exception) => Invalid(exception.getMessage)
     }
   }

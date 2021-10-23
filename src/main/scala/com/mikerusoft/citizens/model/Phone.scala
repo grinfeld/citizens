@@ -28,6 +28,14 @@ object Phone {
       (value.toValid("Invalid phone value"), `type`.toValid("Invalid phone type")).mapN((p, t) => new Phone(None, None, p, t))
     }
   }
+  def apply(id: Option[Long], personId: Option[Long], value: String, `type`: String): Phone = {
+    val tp = `type` match {
+      case "home" => HomePhoneType()
+      case "mobile" => MobilePhoneType()
+      case "work" => WorkPhoneType()
+    }
+    new Phone(id, personId, value, tp)
+  }
 }
 
 trait PhoneType {}

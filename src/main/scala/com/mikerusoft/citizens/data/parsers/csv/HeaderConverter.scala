@@ -73,8 +73,7 @@ object HeaderConverter {
   }
 
   private def fillFirstAndLastName(builder: Person.Builder, bs: PersonalInfo.Builder): Person.Builder = {
-    builder.withPersonalInfoField(b => b.firstName(bs.firstName))
-    builder.withPersonalInfoField(b => b.lastName(bs.lastName))
+    builder.withPersonalInfoField(b => b.firstName(bs.firstName)).withPersonalInfoField(b => b.lastName(bs.lastName))
   }
 
   implicit object FullNameFirstNameFirstConverter extends HeaderConverter[FullNameFirstNameFirst] {
@@ -83,7 +82,7 @@ object HeaderConverter {
         .toBuilder(names => {
           fillFirstAndLastName(builder, names match {
             case Nil => PersonalInfo.builder()
-            case header :: Nil => PersonalInfo.builder().withLastName(header)
+            case header :: Nil => PersonalInfo.builder().withFirstName(header)
             case header :: remainder => PersonalInfo.builder().withFirstName(header).withLastName(remainder.mkString(" "))
           })
         })

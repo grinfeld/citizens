@@ -4,7 +4,7 @@ import com.mikerusoft.citizens.model.Types.Validation
 
 trait DBAction[Status] {
   def createConnection[T, B >: DBAction[ConnReady]](): Validation[B]
-  def createTableIfNotExists[T, B >: DBAction[TableReady]](db: DBAction[ConnReady]): Validation[B]
+  def createTable[T, B >: DBAction[TableReady]](db: DBAction[ConnReady], sql: String): Validation[B]
   def insertOfAutoIncrement[P](db: DBAction[TableReady], insertStatement: String): Validation[Int]
   def selectUnique[P](db: DBAction[TableReady], selectStatement: String): Validation[P]
 }
