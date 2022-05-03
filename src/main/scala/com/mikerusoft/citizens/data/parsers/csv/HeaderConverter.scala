@@ -41,6 +41,13 @@ object HeaderConverter {
     }
   }
 
+  implicit def optionConverter[A <: Header](implicit ev: HeaderConverter[A]): HeaderConverter[Option[A]] = new HeaderConverter[Option[A]] {
+    override def convert(header: Option[A], value: String)(implicit builder: Person.Builder): Person.Builder = header match {
+      case Some(h) => h.toHeader(value)
+      case None => builder.copy()
+    }
+  }
+
   implicit object RemoveConverter extends HeaderConverter[Remove] {
     override def convert(header: Remove, value: String)(implicit builder: Person.Builder): Person.Builder = {
       Option(value).map(_.trim).tryIt(s => if (s.isBlank || s.equals("") || !s.equalsIgnoreCase("true") || s.equals("0")) false else true)
@@ -187,7 +194,7 @@ object HeaderConverter {
     override def convert(header: HomePhoneHeader, value: String)(implicit builder: Person.Builder): Person.Builder = parsePhone(value, header)
   }
 
-  implicit class HeaderOp[T <: Header](header: T) {
+  implicit class HeaderSyntax[T <: Header](header: T) {
     def toHeader(value: String)(implicit builder: Person.Builder, converter: HeaderConverter[T]): Person.Builder = converter.convert(header, value)
   }
 

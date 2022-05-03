@@ -19,7 +19,7 @@ object Person {
     def withAddressField(updateFieldFunc: Address.Builder => Address.Builder): Builder = { copy(address = updateFieldFunc.apply(address)) }
     def withPhones(phones: List[Phone.Builder]): Builder = { copy(phones = phones) }
     def withEmails(emails: List[String]): Builder = { copy(emails = emails) }
-    def withTags(tags: List[String]): Builder = { this.tags = tags; this }
+    def withTags(tags: List[String]): Builder = { copy(tags = tags) }
     def withRemove(remove: Boolean): Builder = { copy(remove = remove) }
     def withPersonalInfo(personalInfo: PersonalInfo.Builder): Builder = { copy(personalInfo = personalInfo) }
     def withPersonalInfoField(personalInfoFieldFunc: PersonalInfo.Builder => PersonalInfo.Builder): Builder = { copy(personalInfo = personalInfoFieldFunc.apply(personalInfo)) }
