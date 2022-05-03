@@ -3,7 +3,7 @@ package com.mikerusoft.citizens
 import cats.implicits.catsSyntaxTuple2Semigroupal
 import com.mikerusoft.citizens.data.outputs.DataOutput
 import com.mikerusoft.citizens.data.parsers.csv.{CsvFileReader, CsvLineParser}
-import com.mikerusoft.citizens.infra.ValidatedWithTryMonad
+import com.mikerusoft.citizens.infra.ValidatedFlow
 import com.mikerusoft.citizens.model.Person
 import com.mikerusoft.citizens.model.Types.{Invalid, Valid, Validation}
 import com.typesafe.scalalogging.LazyLogging
@@ -45,16 +45,16 @@ object Application extends App with LazyLogging {
     // second bad version
     // num of valid records + accumulated error string
     val result2: Validation[Int] =
-      ValidatedWithTryMonad.startFromAction((fileName:String) => Source.fromFile(fileName))
-        .convert(source => source.getLines())
-        .convert(lines => CsvFileReader.parseLines(skipHeader, lines)(input))
-        .convert(parsedPersons => parsedPersons.mapLine(p => output.outputTo(p)))
-        .convert(validatedPersons => validatedPersons.map {
+      ValidatedFlow(Source.fromFile(fileName))
+        .map(source => source.getLines())
+        .map(lines => CsvFileReader.parseLines(skipHeader, lines)(input))
+        .map(parsedPersons => parsedPersons.mapLine(p => output.outputTo(p)))
+        .map(validatedPersons => validatedPersons.map {
           case Valid(_) => Valid(1)
           case Invalid(e) => Invalid(e).asInstanceOf[Validation[Int]]
         })
         .foldM(0)((first, second:Int) => first + second)(it => it)
-        .run(fileName)
+        .run()
     result2
   }
 }
