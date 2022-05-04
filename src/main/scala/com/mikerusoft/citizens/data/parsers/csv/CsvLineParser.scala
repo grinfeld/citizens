@@ -11,10 +11,10 @@ import scala.annotation.tailrec
 
  case class CsvLineParser(headers: HeaderItem) extends LineParser[Person] with LazyLogging {
 
-  override def readLine(line: String): Validation[Person] = {
+  override def readLine(line: String, lineNum: Int): Validation[Person] = {
     val data: List[(String, Int)] = CsvLineParser.parseCsvLine(line).zipWithIndex
       .filter(pair => headers.contains(pair._2))
-    parseColumns(data)(Person.builder())
+    parseColumns(data)(Person.builder(lineNum))
   }
 
   @tailrec

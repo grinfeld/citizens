@@ -28,7 +28,11 @@ case class ValidatedWithEffect[O](input: Validation[O]) {
     new ValidatedWithEffect[L](input match {
       case Valid(i) =>
         func(i).foldLeft(Valid(z))((acc, ph) => (acc, ph).mapN((ls, p) => agg.apply(ls, p)))
-      case Invalid(m) => Invalid(m)
+      case Invalid(m) =>
+        Invalid[L](m).toValidatedNel[String, L].leftMap(l => l.foldLeft("")((all: String, error: String) => all + ", " + error)) match {
+          case Valid(e) => Valid(e)
+          case Invalid(e) => Invalid(e.stripTrailing())
+        }
     })
   }
 

@@ -28,7 +28,7 @@ object Application extends App with LazyLogging {
         case Failure(exception) => Invalid(exception.getMessage)
         case Success(fileReader) =>
           fileReader.getLines().map(line =>
-            input.readLine(line)).map {
+            input.readLine(line, 0)).map {
               case Valid(person) => output.outputTo(person)
               case Invalid(e) => Invalid(e)
             }.map {

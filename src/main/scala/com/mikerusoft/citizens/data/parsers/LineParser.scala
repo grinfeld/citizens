@@ -4,5 +4,5 @@ import cats.data.Validated
 import com.mikerusoft.citizens.model.Types.ErrorMsg
 
 trait LineParser[T] {
-  def readLine(line: String): Validated[ErrorMsg, T]
+  def readLine(line: ErrorMsg, lineNum: Int): Validated[ErrorMsg, T]
 }

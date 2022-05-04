@@ -3,15 +3,15 @@ package com.mikerusoft.citizens.model
 import cats.data.Validated
 import cats.data.Validated.Valid
 import cats.implicits.{catsSyntaxTuple2Semigroupal, catsSyntaxTuple3Semigroupal}
-import com.mikerusoft.citizens.model.Types.Validation
+import com.mikerusoft.citizens.model.Types.{Invalid, Validation}
 import com.mikerusoft.citizens.model.context.Validation._
 
 case class Person(id: Option[Long], tz: Option[String], phones: List[Phone], emails: List[String], address: Option[Address], tags: List[String], remove: Boolean = false, personalInfo: PersonalInfo)
 
 object Person {
-  def builder(): Builder = Builder(None, List(), List(), Address.builder(), List(), remove = false, PersonalInfo.builder())
+  def builder(index: Int): Builder = Builder(index, None, List(), List(), Address.builder(), List(), remove = false, PersonalInfo.builder())
 
-  case class Builder(var tz: Option[String], var phones: List[Phone.Builder], var emails: List[String], var address: Address.Builder,
+  case class Builder(var index: Int, var tz: Option[String], var phones: List[Phone.Builder], var emails: List[String], var address: Address.Builder,
                       var tags: List[String], var remove: Boolean, var personalInfo: PersonalInfo.Builder) {
 
     def withTz(tz: String): Builder = { copy(tz = Option(tz).filterNotEmpty()) }
@@ -28,9 +28,13 @@ object Person {
       val phonesValidated: Validated[String, List[Phone]] = phones.map(_.buildWith()).foldLeft(Valid(List[Phone]()).asInstanceOf[Validation[List[Phone]]])((acc, ph) => (acc, ph).mapN((ls, p) => p :: ls))
       val personalInfoValidated = personalInfo.buildWith()
       val addressValidated = address.buildWith()
-      (phonesValidated, personalInfoValidated, addressValidated).mapN((phones, personalInfo, address) =>
+      val res = (phonesValidated, personalInfoValidated, addressValidated).mapN((phones, personalInfo, address) =>
         Person(None, tz, phones, emails.filterNot(_.isBlank), address, tags.filterNot(_.isBlank), remove, personalInfo)
       )
+      res match {
+        case Valid(v) => Valid(v)
+        case Invalid(e) => Invalid(s"${index}: ${e}\n")
+      }
     }
   }
 
