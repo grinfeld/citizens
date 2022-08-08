@@ -23,27 +23,26 @@ class DBTestScalaCheck extends AnyFlatSpec with Matchers with doobie.scalatest.I
   "stam test" should "with doobie and H2" in {
 
 
-    val db = DoobieDbAction.create.andThen(db => db.createTable(db, "CREATE TABLE if not exists persons (id INT auto_increment, name VARCHAR(256), PRIMARY KEY (id))"))
-
-    db match {
-      case Valid(db) =>
-        db.insertOfAutoIncrement(db, "insert into persons (id, name) values (null, 'Misha')") match {
-          case Valid(id) =>
-            implicit val r = Read[Pers]
-            val v = db.selectUnique(db, s"select id,name from persons where id = $id")
-            v match {
-              case Valid(a) =>
-                println(a)
-                db.selectList(db, "select id,name from persons where name='Misha'") match {
-                  case Valid(list) => list.foreach(p => println(s"$p"))
-                  case Invalid(e) => println(e)
-                }
-              case Invalid(e) => println(e)
-            }
-          case Invalid(e) => println(e)
-        }
-      case Invalid(error) => println(error)
-    }
+    DoobieDbAction.create.andThen(db => db.createTable(db, "CREATE TABLE if not exists persons (id INT auto_increment, name VARCHAR(256), PRIMARY KEY (id))"))
+      match {
+        case Valid(db) =>
+          db.insertOfAutoIncrement(db, "insert into persons (id, name) values (null, 'Misha')") match {
+            case Valid(id) =>
+              implicit val r = Read[Pers]
+              val v = db.selectUnique(db, s"select id,name from persons where id = $id")
+              v match {
+                case Valid(a) =>
+                  println(a)
+                  db.selectList(db, "select id,name from persons where name='Misha'") match {
+                    case Valid(list) => list.foreach(p => println(s"$p"))
+                    case Invalid(e) => println(e)
+                  }
+                case Invalid(e) => println(e)
+              }
+            case Invalid(e) => println(e)
+          }
+        case Invalid(error) => println(error)
+      }
 
 
 /*    (sql"CREATE TABLE if not exists person (id INT auto_increment, name VARCHAR(256), PRIMARY KEY (id))".update.run.transact(transactor).attemptSql.unsafeRunSync() match {
