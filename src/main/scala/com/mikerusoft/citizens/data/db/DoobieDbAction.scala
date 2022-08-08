@@ -1,5 +1,6 @@
 package com.mikerusoft.citizens.data.db
-import cats.effect.{ContextShift, IO}
+import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import com.mikerusoft.citizens.data.db.DoobieDbAction.SqlToString
 import com.mikerusoft.citizens.model.Types.{Invalid, Valid, Validation}
 import doobie.Fragment
@@ -7,12 +8,7 @@ import doobie.implicits._
 import doobie.syntax._
 import doobie.util.{Read, fragment}
 
-import scala.concurrent.ExecutionContext
-
 final case class DoobieDbAction[S <: Status] private[db] (transactor: doobie.Transactor[IO]) extends DBAction[S, Read] {
-
-  implicit def contextShift: ContextShift[IO] =
-    IO.contextShift(ExecutionContext.global)
 
   override def createConnection[B >: DBAction[ConnReady, Read]](): Validation[B] = {
     Valid(new DoobieDbAction[ConnReady](transactor))
@@ -92,8 +88,6 @@ object DoobieDbAction {
   def create(implicit trans: doobie.Transactor[IO]): Validation[DBAction[ConnReady, Read]] = {
     apply(trans)
   }
-
-  def stringToSql(value: String): fragment.Fragment = new SqlInterpolator(new StringContext(value)).sql()
 
   implicit class SqlToString(value: String) {
     def toSql: fragment.Fragment = new SqlInterpolator(new StringContext(value)).sql()

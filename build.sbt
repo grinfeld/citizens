@@ -9,8 +9,9 @@ val versions = new {
   val scala_logging = "3.9.5"
   val jackson = "2.13.3"
   val cats = "2.8.0"
-  val doobie = "0.13.4"
+  val doobie = "1.0.0-RC1"
   val mysql = "8.0.29"
+  val NewTypeVersion = "0.4.4"
 /*  val dotty          = "0.26.0-bin-20200718-c753ca3-NIGHTLY"
   val zio            = "1.0.0-RC21-2"
   val zioInteropCats = "2.1.4.0-RC17"*/
@@ -41,7 +42,8 @@ lazy val root = (project in file("."))
       "org.tpolecat" %% "doobie-specs2" % versions.doobie % "test",
       "org.tpolecat" %% "doobie-scalatest" % versions.doobie % "test",
       "org.scalatest" %% "scalatest" % versions.tests.scalaTest % "test",
-      "org.mockito" %% "mockito-scala-scalatest" % versions.tests.mockito % "test"
+      "org.mockito" %% "mockito-scala-scalatest" % versions.tests.mockito % "test",
+      "io.estatico"  %% "newtype"         % versions.NewTypeVersion
 /*      "dev.zio" %% "zio"              % versions.zio,
       "dev.zio" %% "zio-streams"      % versions.zio,
       "dev.zio" %% "zio-interop-cats" % versions.zioInteropCats,
