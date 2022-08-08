@@ -2,13 +2,15 @@ package com.mikerusoft.citizens.data.db
 
 import com.mikerusoft.citizens.model.Types.Validation
 
-trait DBAction[Status] {
-  def createConnection[T, B >: DBAction[ConnReady]](): Validation[B]
-  def createTable[T, B >: DBAction[TableReady]](db: DBAction[ConnReady], sql: String): Validation[B]
-  def insertOfAutoIncrement[P](db: DBAction[TableReady], insertStatement: String): Validation[Int]
-  def selectUnique[P](db: DBAction[TableReady], selectStatement: String): Validation[P]
+import scala.language.higherKinds
+
+trait DBAction[T <: Status, Evidence[_]] {
+  def createConnection[B >: DBAction[ConnReady, Evidence]](): Validation[B]
+  def createTable[B >: DBAction[ConnReady, Evidence]](db: DBAction[ConnReady, Evidence], sql: String): Validation[B]
+  def insertOfAutoIncrement[P](db: DBAction[ConnReady, Evidence], insertStatement: String): Validation[Int]
+  def selectUnique[P](db: DBAction[ConnReady, Evidence], selectStatement: String)(implicit ev: Evidence[P]): Validation[P]
+  def selectList[P](db: DBAction[ConnReady, Evidence], selectStatement: String)(implicit ev: Evidence[P]): Validation[List[P]]
 }
 
 sealed trait Status
 final case class ConnReady() extends Status
-final case class TableReady() extends Status

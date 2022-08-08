@@ -5,18 +5,18 @@ version := "0.1"
 scalaVersion := "2.12.4"
 
 val versions = new {
-  val logback = "1.2.3"
-  val scala_logging = "3.9.2"
-  val jackson = "2.10.5"
-  val cats = "2.4.2"
-  val doobie = "0.12.1"
-  val mysql = "8.0.23"
+  val logback = "1.2.11"
+  val scala_logging = "3.9.5"
+  val jackson = "2.13.3"
+  val cats = "2.8.0"
+  val doobie = "0.13.4"
+  val mysql = "8.0.29"
 /*  val dotty          = "0.26.0-bin-20200718-c753ca3-NIGHTLY"
   val zio            = "1.0.0-RC21-2"
   val zioInteropCats = "2.1.4.0-RC17"*/
   val tests = new {
-    val scalaTest = "3.2.0"
-    val mockito = "1.16.0"
+    val scalaTest = "3.2.12"
+    val mockito = "1.17.7"
   }
 }
 
@@ -35,6 +35,7 @@ lazy val root = (project in file("."))
       "ch.qos.logback" % "logback-classic" % versions.logback,
       "mysql" % "mysql-connector-java" % versions.mysql,
       "org.tpolecat" %% "doobie-core" % versions.doobie,
+      "org.tpolecat" %% "doobie-hikari" % versions.doobie,
       "org.tpolecat" %% "doobie-quill" % versions.doobie,
       "org.tpolecat" %% "doobie-h2" % versions.doobie % "test",
       "org.tpolecat" %% "doobie-specs2" % versions.doobie % "test",

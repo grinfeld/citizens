@@ -1,38 +1,63 @@
 package com.mikerusoft.citizens.data.db
 import cats.effect.{ContextShift, IO}
-import com.mikerusoft.citizens.data.db.DoobieDbAction.{Pers, SqlToString}
+import com.mikerusoft.citizens.data.db.DoobieDbAction.SqlToString
+import com.mikerusoft.citizens.model.Types.{Invalid, Valid, Validation}
+import doobie.Fragment
 import doobie.implicits._
 import doobie.syntax._
-import com.mikerusoft.citizens.model.Types.{Invalid, Valid, Validation}
-import doobie.util.fragment
+import doobie.util.{Read, fragment}
 
 import scala.concurrent.ExecutionContext
 
-final case class DoobieDbAction[S] private[db] (transactor: doobie.Transactor[IO]) extends DBAction[S] {
+final case class DoobieDbAction[S <: Status] private[db] (transactor: doobie.Transactor[IO]) extends DBAction[S, Read] {
 
   implicit def contextShift: ContextShift[IO] =
     IO.contextShift(ExecutionContext.global)
 
-  override def createConnection[T, B >: DBAction[ConnReady]](): Validation[B] = Valid(new DoobieDbAction[ConnReady](transactor))
-  override def createTable[T, B >: DBAction[TableReady]](db: DBAction[ConnReady], sql: String): Validation[B] = {
-    sql.toSql.update.run.transact(transactor).attemptSql.unsafeRunSync() match {
-      case Right(_) => Valid(new DoobieDbAction[TableReady](transactor))
+  override def createConnection[B >: DBAction[ConnReady, Read]](): Validation[B] = {
+    Valid(new DoobieDbAction[ConnReady](transactor))
+  }
+
+  override def createTable[B >: DBAction[ConnReady, Read]](db: DBAction[ConnReady, Read], sql: String): Validation[B] = {
+    createTableInner(db, sql.toSql)
+  }
+
+  override def insertOfAutoIncrement[P](db: DBAction[ConnReady, Read], insertStatement: String): Validation[Int] = {
+    insertOfAutoIncrementInner(db, insertStatement.toSql)
+  }
+
+  override def selectUnique[P](db: DBAction[ConnReady, Read], selectStatement: String)(implicit ev: Read[P]): Validation[P] = {
+    selectUniqueInner(db, selectStatement.toSql)
+  }
+
+  override def selectList[P](db: DBAction[ConnReady, Read], selectStatement: String)(implicit ev: Read[P]): Validation[List[P]] = {
+    selectListInner(db, selectStatement.toSql)
+  }
+
+  def createTableInner[B >: DBAction[ConnReady, Read]](db: DBAction[ConnReady, Read], sql: Fragment): Validation[B] = {
+    sql.update.run.transact(transactor).attemptSql.unsafeRunSync() match {
+      case Right(_) => Valid(new DoobieDbAction[ConnReady](transactor))
       case Left(exception) => Invalid(exception.getMessage)
     }
   }
 
-  override def insertOfAutoIncrement[P](db: DBAction[TableReady], insertStatement: String): Validation[Int] = {
-    insertStatement.toSql.update.run.transact(transactor).attemptSql.unsafeRunSync() match {
+  def insertOfAutoIncrementInner[P](db: DBAction[ConnReady, Read], insertStatement: Fragment): Validation[Int] = {
+    insertStatement.update.run.transact(transactor).attemptSql.unsafeRunSync() match {
       case Right(value) => Valid(value)
       case Left(exception) => Invalid(exception.getMessage)
     }
   }
 
-  override def selectUnique[P](db: DBAction[TableReady], selectStatement: String): Validation[P] = {
-    selectStatement.toSql.query[Pers].unique.transact(transactor).attemptSql.unsafeRunSync() match {
-    //selectStatement.toSql.query[P].unique.transact(transactor).attemptSql.unsafeRunSync() match {
-      //case Right(value) => Valid(value)
-      case Right(value) => Valid(value.asInstanceOf[P])
+  def selectUniqueInner[P](db: DBAction[ConnReady, Read], selectStatement: Fragment)(implicit ev: Read[P]): Validation[P] = {
+    selectStatement.query[P].unique.transact(transactor).attemptSql.unsafeRunSync() match {
+      case Right(value) => Valid(value)
+      case Left(exception) => Invalid(exception.getMessage)
+    }
+  }
+
+  def selectListInner[P](db: DBAction[ConnReady, Read], selectStatement: Fragment)(implicit ev: Read[P]): Validation[List[P]] = {
+    selectStatement.query[P].to[List].transact(transactor).attemptSql.unsafeRunSync()match {
+      case Right(value) => Valid(value)
       case Left(exception) => Invalid(exception.getMessage)
     }
   }
@@ -41,8 +66,31 @@ final case class DoobieDbAction[S] private[db] (transactor: doobie.Transactor[IO
 object DoobieDbAction {
   case class Pers(id: Int, name: String)
 
-  def apply(trans: () => doobie.Transactor[IO]): Validation[DBAction[ConnReady]] = {
-    new DoobieDbAction(trans()).createConnection()
+  implicit class DoobieDbActionWrapper(val db: DBAction[ConnReady, Read]) {
+
+    def createTableWithFragment[B >: DBAction[ConnReady, Read]](db: DBAction[ConnReady, Read], sql: Fragment): Validation[B] = {
+      db.asInstanceOf[DoobieDbAction[ConnReady]].createTableInner(db, sql)
+    }
+
+    def insertOfAutoIncrementWithFragment[P](db: DBAction[ConnReady, Read], sql: Fragment): Validation[Int] = {
+      db.asInstanceOf[DoobieDbAction[ConnReady]].insertOfAutoIncrementInner(db, sql)
+    }
+
+    def selectUniqueWithFragment[P](db: DBAction[ConnReady, Read], sql: Fragment)(implicit ev: Read[P]): Validation[P] = {
+      db.asInstanceOf[DoobieDbAction[ConnReady]].selectUniqueInner(db, sql)
+    }
+
+    def selectListWithFragment[P](db: DBAction[ConnReady, Read], sql: Fragment)(implicit ev: Read[P]): Validation[List[P]] = {
+      db.asInstanceOf[DoobieDbAction[ConnReady]].selectListInner(db, sql)
+    }
+  }
+
+  def apply(trans: doobie.Transactor[IO]): Validation[DBAction[ConnReady, Read]] = {
+    new DoobieDbAction(trans).createConnection()
+  }
+
+  def create(implicit trans: doobie.Transactor[IO]): Validation[DBAction[ConnReady, Read]] = {
+    apply(trans)
   }
 
   def stringToSql(value: String): fragment.Fragment = new SqlInterpolator(new StringContext(value)).sql()
