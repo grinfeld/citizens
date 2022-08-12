@@ -68,7 +68,6 @@ final case class DoobieDbAction[S <: Status] private[db] (transactor: doobie.Tra
 }
 
 object DoobieDbAction {
-  case class Pers(id: Int, name: String)
 
   implicit class DoobieDbActionWrapper(val db: DBAction[ConnReady, Read, Write]) {
 

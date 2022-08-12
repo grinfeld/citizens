@@ -2,14 +2,13 @@ package com.mikerusoft.citizens.db
 
 import cats.effect._
 import com.mikerusoft.citizens.data.db.DoobieDbAction
-import com.mikerusoft.citizens.data.db.DoobieDbAction._
 import com.mikerusoft.citizens.model.Types.{Invalid, Valid}
 import doobie._
-import doobie.implicits._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class DBTestScalaCheck extends AnyFlatSpec with Matchers with doobie.scalatest.IOChecker {
+  case class Pers(id: Int, name: String)
 
   implicit val transactor: doobie.Transactor[IO] = {
     Transactor.fromDriverManager[IO](
@@ -21,8 +20,6 @@ class DBTestScalaCheck extends AnyFlatSpec with Matchers with doobie.scalatest.I
   }
 
   "stam test" should "with doobie and H2" in {
-
-
     DoobieDbAction.create.andThen(db => db.createTable(db, "CREATE TABLE if not exists persons (id INT auto_increment, name VARCHAR(256), PRIMARY KEY (id))"))
       match {
         case Valid(db) =>
