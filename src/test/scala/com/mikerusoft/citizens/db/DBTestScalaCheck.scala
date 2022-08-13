@@ -23,15 +23,16 @@ class DBTestScalaCheck extends AnyFlatSpec with Matchers with doobie.scalatest.I
     DoobieDbAction.create.andThen(db => db.createTable(db, "CREATE TABLE if not exists persons (id INT auto_increment, name VARCHAR(256), PRIMARY KEY (id))"))
       match {
         case Valid(db) =>
-          val vid: Validation[Int] = db.insertOfAutoIncrement(db, "insert into persons (id, name) values (null, 'Misha')", "id")(Read[Int])
+          val vid: Validation[Int] = db.insertOfAutoIncrement(db, "insert into persons (id, name) values (null, 'Misha')", "id")
           vid match {
             case Valid(id) =>
               println(s"inserted with $id")
-              implicit val r = Read[Pers]
-              val v = db.selectUnique(db, s"select id,name from persons where id = $id")
+              // or defining implicit >val r = Read[Pers] or defining variable implicit type >val v: Validation[Pers]
+              val v: Validation[Pers] = db.selectUnique(db, s"select id,name from persons where id = $id")
               v match {
                 case Valid(a) =>
                   println(a)
+                  implicit val r = Read[Pers]
                   db.selectList(db, "select id,name from persons where name='Misha'") match {
                     case Valid(list) => list.foreach(p => println(s"$p"))
                     case Invalid(e) => println(e)
