@@ -26,8 +26,8 @@ final case class DoobieDbAction[S <: Status] private[db] (transactor: doobie.Tra
     }
   }
 
-  override def insertOfAutoIncrement(db: DBAction[ConnReady, Read, Write], insertStatement: String): Validation[Int] = {
-    insertOfAutoIncrement(db, insertStatement.toSql)
+  override def insertOfAutoIncrement[TT](db: DBAction[ConnReady, Read, Write], insertStatement: String, nameAutoIncrementField: String)(implicit ev: Read[TT]): Validation[TT] = {
+    insertOfAutoIncrement(db, insertStatement.toSql, nameAutoIncrementField)
   }
 
   override def selectUnique[P](db: DBAction[ConnReady, Read, Write], selectStatement: String)(implicit ev: Read[P]): Validation[P] = {
@@ -45,8 +45,8 @@ final case class DoobieDbAction[S <: Status] private[db] (transactor: doobie.Tra
     }
   }
 
-  def insertOfAutoIncrement(db: DBAction[ConnReady, Read, Write], insertStatement: Fragment): Validation[Int] = {
-    insertStatement.update.run.transact(transactor).attemptSql.unsafeRunSync() match {
+  def insertOfAutoIncrement[TT](db: DBAction[ConnReady, Read, Write], insertStatement: Fragment, nameAutoIncrementField: String)(implicit ev: Read[TT]): Validation[TT] = {
+    insertStatement.update.withUniqueGeneratedKeys[TT](nameAutoIncrementField).transact(transactor).attemptSql.unsafeRunSync() match {
       case Right(value) => Valid(value)
       case Left(exception) => Invalid(exception.getMessage)
     }
@@ -75,8 +75,8 @@ object DoobieDbAction {
       db.asInstanceOf[DoobieDbAction[ConnReady]].createTable(db, sql)
     }
 
-    def insertOfAutoIncrementWithFragment[P](db: DBAction[ConnReady, Read, Write], sql: Fragment): Validation[Int] = {
-      db.asInstanceOf[DoobieDbAction[ConnReady]].insertOfAutoIncrement(db, sql)
+    def insertOfAutoIncrementWithFragment[TT](db: DBAction[ConnReady, Read, Write], sql: Fragment, nameAutoIncrementField: String)(implicit ev: Read[TT]): Validation[TT] = {
+      db.asInstanceOf[DoobieDbAction[ConnReady]].insertOfAutoIncrement(db, sql, nameAutoIncrementField)
     }
 
     def selectUniqueWithFragment[P](db: DBAction[ConnReady, Read, Write], sql: Fragment)(implicit ev: Read[P]): Validation[P] = {
