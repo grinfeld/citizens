@@ -1,25 +1,26 @@
 package com.mikerusoft.citizens.db
 
 import cats.effect._
+import com.dimafeng.testcontainers.{ForAllTestContainer, MySQLContainer}
 import com.mikerusoft.citizens.data.db.DoobieDbAction
 import com.mikerusoft.citizens.model.Types.{Invalid, Valid, Validation}
 import doobie._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class DBTestScalaCheck extends AnyFlatSpec with Matchers with doobie.scalatest.IOChecker {
+class DBTestScalaCheck extends AnyFlatSpec with Matchers with ForAllTestContainer  {
+  override val container: MySQLContainer = MySQLContainer()
   case class Pers(id: Int, name: String)
 
-  implicit val transactor: doobie.Transactor[IO] = {
-    Transactor.fromDriverManager[IO](
-      "com.mysql.cj.jdbc.Driver",
-      "jdbc:mysql://localhost:3306/myimdb", // connect URL (driver-specific)
-      "misha", // user
-      "misha"
-    )
-  }
-
   "stam test" should "with doobie and H2" in {
+    implicit val transactor: doobie.Transactor[IO] = {
+      Transactor.fromDriverManager[IO](
+        "com.mysql.cj.jdbc.Driver",
+        container.jdbcUrl + "?autoReconnect=true&useSSL=false", // connect URL (driver-specific)
+        "test", // user
+        "test"
+      )
+    }
     DoobieDbAction.create.andThen(db => db.createTable(db, "CREATE TABLE if not exists persons (id INT auto_increment, name VARCHAR(256), PRIMARY KEY (id))"))
       match {
         case Valid(db) =>

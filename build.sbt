@@ -18,6 +18,7 @@ val versions = new {
   val tests = new {
     val scalaTest = "3.2.12"
     val mockito = "1.17.7"
+    val testcontainers = "0.40.10"
   }
 }
 
@@ -43,7 +44,9 @@ lazy val root = (project in file("."))
       "org.tpolecat" %% "doobie-scalatest" % versions.doobie % "test",
       "org.scalatest" %% "scalatest" % versions.tests.scalaTest % "test",
       "org.mockito" %% "mockito-scala-scalatest" % versions.tests.mockito % "test",
-      "io.estatico"  %% "newtype"         % versions.NewTypeVersion
+      "io.estatico"  %% "newtype"         % versions.NewTypeVersion,
+      "com.dimafeng" %% "testcontainers-scala-scalatest" % versions.tests.testcontainers % "test",
+      "com.dimafeng" %% "testcontainers-scala-mysql" % versions.tests.testcontainers % "test",
 /*      "dev.zio" %% "zio"              % versions.zio,
       "dev.zio" %% "zio-streams"      % versions.zio,
       "dev.zio" %% "zio-interop-cats" % versions.zioInteropCats,
