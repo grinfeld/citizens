@@ -4,16 +4,22 @@ import cats.data.Validated
 import cats.implicits.catsSyntaxTuple2Semigroupal
 import com.mikerusoft.citizens.model.Person.FilterBlankString
 import cats.syntax.option._
+import com.mikerusoft.citizens.model.PhoneTypes.PhoneType
 import com.mikerusoft.citizens.model.Types.ErrorMsg
 import com.mikerusoft.citizens.model.context.Validation._
+
+
+object PhoneTypes extends Enumeration {
+  type PhoneType = Value
+
+  val home: PhoneTypes.Value = Value(0, "home")
+  val mobile: PhoneTypes.Value = Value(1, "mobile")
+  val work: PhoneTypes.Value = Value(2, "work")
+}
 
 case class Phone(id: Option[Long], personId: Option[Long], value: String, `type`: PhoneType)
 
 object Phone {
-
-  val HOME_TYPE = new HomePhoneType
-  val MOBILE_TYPE = new MobilePhoneType
-  val WORK_TYPE = new WorkPhoneType
 
   def builder(): Builder = Builder(None, None, None, None)
 
@@ -30,17 +36,12 @@ object Phone {
   }
   def apply(id: Option[Long], personId: Option[Long], value: String, `type`: String): Phone = {
     val tp = `type` match {
-      case "home" => HomePhoneType()
-      case "mobile" => MobilePhoneType()
-      case "work" => WorkPhoneType()
+      case "home" => PhoneTypes.home
+      case "mobile" => PhoneTypes.mobile
+      case "work" => PhoneTypes.work
     }
     new Phone(id, personId, value, tp)
   }
 }
-
-trait PhoneType {}
-sealed case class HomePhoneType() extends PhoneType
-sealed case class MobilePhoneType() extends PhoneType
-sealed case class WorkPhoneType() extends PhoneType
 
 

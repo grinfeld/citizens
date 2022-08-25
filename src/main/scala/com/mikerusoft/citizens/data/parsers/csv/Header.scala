@@ -1,6 +1,7 @@
 package com.mikerusoft.citizens.data.parsers.csv
 
-import com.mikerusoft.citizens.model.{Phone, PhoneType}
+import com.mikerusoft.citizens.model.PhoneTypes
+import com.mikerusoft.citizens.model.PhoneTypes.PhoneType
 
 import java.time.format.DateTimeFormatter
 
@@ -25,11 +26,11 @@ final case class Entrance() extends Header
 final case class NeighborhoodName() extends Header
 sealed abstract class PhoneNumberHeader(val countryToUse: String, val localPrefix: String, val phoneType: PhoneType) extends Header
 final case class MobilePhoneHeader(override val countryToUse: String, override val localPrefix: String)
-                          extends PhoneNumberHeader(countryToUse, localPrefix, phoneType = Phone.MOBILE_TYPE)
+                          extends PhoneNumberHeader(countryToUse, localPrefix, phoneType = PhoneTypes.mobile)
 final case class WorkPhoneHeader(override val countryToUse: String, override val localPrefix: String)
-                          extends PhoneNumberHeader(countryToUse, localPrefix, phoneType = Phone.WORK_TYPE)
+                          extends PhoneNumberHeader(countryToUse, localPrefix, phoneType = PhoneTypes.work)
 final case class HomePhoneHeader(override val countryToUse: String, override val localPrefix: String)
-                          extends PhoneNumberHeader(countryToUse, localPrefix, phoneType = Phone.HOME_TYPE)
+                          extends PhoneNumberHeader(countryToUse, localPrefix, phoneType = PhoneTypes.home)
 final case class Email() extends Header
 final case class Tags(delimiter: String = ",") extends Header
 final case class Remove() extends Header

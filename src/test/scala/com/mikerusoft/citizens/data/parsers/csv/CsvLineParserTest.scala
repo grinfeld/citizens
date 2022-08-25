@@ -2,7 +2,7 @@ package com.mikerusoft.citizens.data.parsers.csv
 
 import cats.data.Validated
 import cats.data.Validated.{Invalid, Valid}
-import com.mikerusoft.citizens.model.{Person, Phone}
+import com.mikerusoft.citizens.model.{Person, Phone, PhoneTypes}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -138,7 +138,7 @@ class CsvLineParserTest extends AnyFlatSpec with Matchers {
     assertResult(None)(person.tz)
     assertResult(None)(person.address)
     assertResult(List())(person.emails)
-    assertResult(person.phones)(List(Phone(None, None, "972544403945", Phone.MOBILE_TYPE)))
+    assertResult(person.phones)(List(Phone(None, None, "972544403945", PhoneTypes.mobile)))
     assertResult(false)(person.remove)
     assertResult(List())(person.tags)
   }
